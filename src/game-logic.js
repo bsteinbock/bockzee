@@ -82,7 +82,7 @@ export function normalizePlayerNames(playerNames) {
     .filter((name) => name.length > 0)
     .slice(0, MAX_PLAYERS);
 
-  const fallbackCount = Math.max(MIN_PLAYERS, trimmedNames.length || 2);
+  const fallbackCount = Math.max(MIN_PLAYERS, trimmedNames.length);
 
   return Array.from({ length: fallbackCount }, (_, index) => trimmedNames[index] || `Player ${index + 1}`);
 }
