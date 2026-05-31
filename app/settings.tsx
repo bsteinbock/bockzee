@@ -27,7 +27,7 @@ export default function SettingsScreen() {
     setAllowedRolls(settings.allowedRolls);
   }, [settings]);
 
-  const updatePlayerName = (index, value) => {
+  const updatePlayerName = (index: number, value: string) => {
     setPlayerNames((currentNames) =>
       currentNames.map((name, currentIndex) => (currentIndex === index ? value : name))
     );
