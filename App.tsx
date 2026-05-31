@@ -185,6 +185,11 @@ export default function App() {
   const [lastAction, setLastAction] = useState('');
 
   const currentPlayer = players[currentPlayerIndex];
+
+  if (!currentPlayer) {
+    return null;
+  }
+
   const diceValues = getDiceValues(dice);
 
   const heldValues = dice
@@ -220,17 +225,19 @@ export default function App() {
     }
 
     const score = scoreCategory(categoryId, sourceValues);
-    const updatedPlayers = players.map((player, index) => {
+    const updatedPlayers = players.map<Player>((player, index) => {
       if (index !== currentPlayerIndex) {
         return player;
       }
 
+      const scores: Scores = {
+        ...player.scores,
+        [categoryId]: score,
+      };
+
       return {
         ...player,
-        scores: {
-          ...player.scores,
-          [categoryId]: score,
-        },
+        scores,
       };
     });
 
@@ -260,12 +267,12 @@ export default function App() {
     }
 
     const nextRoll = rollCount + 1;
-    const rerolledDice = dice.map((die) =>
+    const rerolledDice: Die[] = dice.map((die) =>
       die.held ? die : { ...die, value: randomDieValue() }
     );
 
     if (nextRoll === MAX_ROLLS) {
-      const clearedDice = rerolledDice.map((die) => ({ ...die, held: false }));
+      const clearedDice: Die[] = rerolledDice.map((die) => ({ ...die, held: false }));
       setDice(clearedDice);
       setRollCount(nextRoll);
       autoScoreAndAdvance(getDiceValues(clearedDice));
