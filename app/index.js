@@ -53,6 +53,20 @@ export default function GameScreen() {
     }
   };
 
+  const getDisplayScore = (categoryId) => {
+    const savedScore = currentPlayer?.scores?.[categoryId];
+    if (savedScore !== null && savedScore !== undefined) {
+      return savedScore;
+    }
+
+    const previewScore = availableCategories.find((item) => item.id === categoryId)?.previewScore;
+    if (canScore && previewScore !== undefined) {
+      return `+${previewScore}`;
+    }
+
+    return '-';
+  };
+
   return (
     <SafeAreaView style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
@@ -125,14 +139,10 @@ export default function GameScreen() {
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Current player sheet</Text>
           {SCORE_CATEGORIES.map((category) => {
-            const score = currentPlayer?.scores?.[category.id];
-            const preview = availableCategories.find((item) => item.id === category.id)?.previewScore;
             return (
               <View key={category.id} style={styles.scoreRow}>
                 <Text style={styles.scoreLabel}>{category.label}</Text>
-                <Text style={styles.scoreValue}>
-                  {score !== null && score !== undefined ? score : canScore && preview !== undefined ? `+${preview}` : '-'}
-                </Text>
+                <Text style={styles.scoreValue}>{getDisplayScore(category.id)}</Text>
               </View>
             );
           })}

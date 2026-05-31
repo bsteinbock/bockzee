@@ -135,7 +135,7 @@ export function scoreCategory(categoryId, values) {
 
   switch (categoryId) {
     case 'ones':
-      return values.filter((value) => value === 1).length;
+      return values.filter((value) => value === 1).length * 1;
     case 'twos':
       return values.filter((value) => value === 2).length * 2;
     case 'threes':

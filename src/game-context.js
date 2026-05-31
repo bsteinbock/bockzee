@@ -52,7 +52,7 @@ export function GameProvider({ children }) {
     setLastAction('');
   };
 
-  const currentPlayer = players[currentPlayerIndex] ?? players[0] ?? null;
+  const currentPlayer = players[currentPlayerIndex] ?? null;
   const diceValues = getDiceValues(dice);
   const heldValues = dice
     .filter((die) => die.held)
