@@ -111,7 +111,7 @@ function scoreCategory(categoryId: CategoryId, values: number[]): number {
 
   switch (categoryId) {
     case 'ones':
-      return values.filter((value) => value === 1).length;
+      return values.filter((value) => value === 1).length * 1;
     case 'twos':
       return values.filter((value) => value === 2).length * 2;
     case 'threes':
@@ -184,11 +184,7 @@ export default function App() {
   const [gameOver, setGameOver] = useState(false);
   const [lastAction, setLastAction] = useState('');
 
-  const currentPlayer = players[currentPlayerIndex];
-
-  if (!currentPlayer) {
-    return null;
-  }
+  const currentPlayer = players[currentPlayerIndex] ?? players[0]!;
 
   const diceValues = getDiceValues(dice);
 

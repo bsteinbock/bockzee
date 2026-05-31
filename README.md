@@ -1,6 +1,6 @@
 # bockzee
 
-A minimalist anonymous compliment board built with Expo and React Native. It lets people post short messages, see a live feed, and browse a lightweight mobile app shell.
+A minimalist Bockzee dice game built with Expo and React Native. It supports multiple players, rolling and holding dice, and scoring each round directly in the app.
 
 ## Running locally
 
