@@ -1,3 +1,3 @@
 # bockzee
 
-Expo Router version of the Bockzee scorekeeper with Game, Settings, and Doc tabs.
+Expo Router version of the BockZee scorekeeper with Game, Settings, and Doc tabs.

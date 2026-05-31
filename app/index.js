@@ -70,7 +70,7 @@ export default function GameScreen() {
   return (
     <SafeAreaView style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Bockzee</Text>
+        <Text style={styles.title}>BockZee</Text>
 
         <View style={styles.card}>
           <Text style={styles.cardLabel}>Current player</Text>
