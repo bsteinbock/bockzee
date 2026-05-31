@@ -53,12 +53,14 @@ export default function SettingsScreen() {
           ))}
           <View style={styles.buttonRow}>
             <Pressable
+              disabled={playerNames.length <= MIN_PLAYERS}
               onPress={() => setPlayerNames((currentNames) => removePlayerSlot(currentNames))}
               style={[styles.smallButton, playerNames.length <= MIN_PLAYERS && styles.disabledButton]}
             >
               <Text style={styles.smallButtonText}>Remove</Text>
             </Pressable>
             <Pressable
+              disabled={playerNames.length >= MAX_PLAYERS}
               onPress={() => setPlayerNames((currentNames) => addPlayerSlot(currentNames))}
               style={[styles.smallButton, playerNames.length >= MAX_PLAYERS && styles.disabledButton]}
             >

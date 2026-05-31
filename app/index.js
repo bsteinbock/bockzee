@@ -95,12 +95,14 @@ export default function GameScreen() {
 
         <View style={styles.buttonRow}>
           <Pressable
+            disabled={!canRoll}
             onPress={rollDice}
             style={[styles.primaryButton, !canRoll && styles.disabledButton]}
           >
             <Text style={styles.primaryButtonText}>Roll Dice</Text>
           </Pressable>
           <Pressable
+            disabled={!canScore}
             onPress={openDonePicker}
             style={[styles.secondaryButton, !canScore && styles.disabledButton]}
           >
@@ -110,9 +112,9 @@ export default function GameScreen() {
 
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Scoreboard</Text>
-          {players.map((player, index) => (
+          {players.map((player) => (
             <View key={player.id} style={styles.playerRow}>
-              <Text style={[styles.playerRowText, index === 0 && currentPlayer?.id === player.id && styles.currentLabel]}>
+              <Text style={[styles.playerRowText, currentPlayer?.id === player.id && styles.currentLabel]}>
                 {player.name}
               </Text>
               <Text style={styles.playerRowText}>{getPlayerTotal(player)}</Text>
