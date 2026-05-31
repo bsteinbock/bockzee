@@ -12,6 +12,7 @@ import {
   getPlayerTotal,
   isGameComplete,
   normalizePlayerNames,
+  randomDieValue,
   scoreCategory,
 } from './game-logic';
 
@@ -79,7 +80,7 @@ export function GameProvider({ children }) {
     }
 
     setDice((currentDice) =>
-      currentDice.map((die) => (die.held ? die : { ...die, value: Math.floor(Math.random() * 6) + 1 }))
+      currentDice.map((die) => (die.held ? die : { ...die, value: randomDieValue() }))
     );
     setRollCount((currentRollCount) => currentRollCount + 1);
     setLastAction('');

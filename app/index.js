@@ -55,7 +55,7 @@ export default function GameScreen() {
 
   const getDisplayScore = (categoryId) => {
     const savedScore = currentPlayer?.scores?.[categoryId];
-    if (savedScore !== null && savedScore !== undefined) {
+    if (savedScore !== null) {
       return savedScore;
     }
 
