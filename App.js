@@ -223,7 +223,8 @@ export default function App() {
     const selection = chooseAutoCategory(currentPlayer, finalDiceValues);
 
     if (!selection) {
-      finishTurn(players, `${currentPlayer.name} has no open categories left.`);
+      setGameOver(true);
+      setLastAction(`${currentPlayer.name} has no open categories left.`);
       return;
     }
 
@@ -236,25 +237,19 @@ export default function App() {
     }
 
     const nextRoll = rollCount + 1;
-    let updatedDice = dice;
-
-    setDice((currentDice) => {
-      const rerolledDice = currentDice.map((die) =>
-        die.held ? die : { ...die, value: randomDieValue() }
-      );
-
-      updatedDice = rerolledDice;
-      return rerolledDice;
-    });
+    const rerolledDice = dice.map((die) =>
+      die.held ? die : { ...die, value: randomDieValue() }
+    );
 
     if (nextRoll === MAX_ROLLS) {
-      const clearedDice = updatedDice.map((die) => ({ ...die, held: false }));
+      const clearedDice = rerolledDice.map((die) => ({ ...die, held: false }));
       setDice(clearedDice);
-      setRollCount(0);
+      setRollCount(nextRoll);
       autoScoreAndAdvance(getDiceValues(clearedDice));
       return;
     }
 
+    setDice(rerolledDice);
     setRollCount(nextRoll);
     setLastAction('');
   };
