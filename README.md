@@ -1,6 +1,6 @@
 # bockzee
 
-A minimalist Bockzee dice game built with Expo and React Native. It supports multiple players, rolling and holding dice, and scoring each round directly in the app.
+Expo Router version of the BockZee scorekeeper with Game, Settings, and Doc tabs.
 
 ## Running locally
 
@@ -16,4 +16,5 @@ A minimalist Bockzee dice game built with Expo and React Native. It supports mul
 
 ## TypeScript
 
-The main app entry now lives in `App.tsx` and is type-checked with the repository's TypeScript configuration.
+The main game screen now lives in `app/index.tsx`, and the shared state and
+scoring logic are type-checked in `src/game-context.tsx` and `src/game-logic.ts`.
