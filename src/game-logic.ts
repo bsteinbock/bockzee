@@ -53,15 +53,33 @@ export const SCORE_CATEGORIES = [
     section: 'Lower',
     description: 'Score the total of all five dice.',
   },
-];
+] as const;
 
-export const CATEGORY_IDS = SCORE_CATEGORIES.map((category) => category.id);
+export type CategoryId = (typeof SCORE_CATEGORIES)[number]['id'];
+export type Scores = Record<CategoryId, number | null>;
+export type Die = {
+  id: number;
+  value: number;
+  held: boolean;
+};
+export type Player = {
+  id: number;
+  name: string;
+  scores: Scores;
+};
+export type CategoryPreview = (typeof SCORE_CATEGORIES)[number] & {
+  previewScore: number;
+};
 
-export function randomDieValue() {
+export const CATEGORY_IDS: CategoryId[] = SCORE_CATEGORIES.map(
+  (category) => category.id
+) as CategoryId[];
+
+export function randomDieValue(): number {
   return Math.floor(Math.random() * 6) + 1;
 }
 
-export function createDice() {
+export function createDice(): Die[] {
   return Array.from({ length: TOTAL_DICE }, (_, id) => ({
     id,
     value: randomDieValue(),
@@ -69,14 +87,14 @@ export function createDice() {
   }));
 }
 
-export function getInitialScores() {
-  return CATEGORY_IDS.reduce((scores, categoryId) => {
+export function getInitialScores(): Scores {
+  return CATEGORY_IDS.reduce<Scores>((scores, categoryId) => {
     scores[categoryId] = null;
     return scores;
-  }, {});
+  }, {} as Scores);
 }
 
-export function normalizePlayerNames(playerNames) {
+export function normalizePlayerNames(playerNames: string[]): string[] {
   const trimmedNames = playerNames
     .map((name) => name.trim())
     .filter((name) => name.length > 0)
@@ -84,10 +102,13 @@ export function normalizePlayerNames(playerNames) {
 
   const fallbackCount = Math.max(MIN_PLAYERS, trimmedNames.length);
 
-  return Array.from({ length: fallbackCount }, (_, index) => trimmedNames[index] || `Player ${index + 1}`);
+  return Array.from(
+    { length: fallbackCount },
+    (_, index) => trimmedNames[index] || `Player ${index + 1}`
+  );
 }
 
-export function createPlayers(playerNames) {
+export function createPlayers(playerNames: string[]): Player[] {
   return normalizePlayerNames(playerNames).map((name, index) => ({
     id: index,
     name,
@@ -95,22 +116,22 @@ export function createPlayers(playerNames) {
   }));
 }
 
-export function getDiceValues(dice) {
+export function getDiceValues(dice: Die[]): number[] {
   return dice.map((die) => die.value);
 }
 
-export function getDiceSum(values) {
+export function getDiceSum(values: number[]): number {
   return values.reduce((total, value) => total + value, 0);
 }
 
-export function getValueCounts(values) {
-  return values.reduce((counts, value) => {
+export function getValueCounts(values: number[]): Record<number, number> {
+  return values.reduce<Record<number, number>>((counts, value) => {
     counts[value] = (counts[value] ?? 0) + 1;
     return counts;
   }, {});
 }
 
-function hasStraight(values, length) {
+function hasStraight(values: number[], length: number): boolean {
   const sorted = [...new Set(values)].sort((a, b) => a - b);
   let run = 1;
 
@@ -128,7 +149,7 @@ function hasStraight(values, length) {
   return false;
 }
 
-export function scoreCategory(categoryId, values) {
+export function scoreCategory(categoryId: CategoryId, values: number[]): number {
   const counts = getValueCounts(values);
   const countValues = Object.values(counts);
   const sum = getDiceSum(values);
@@ -165,10 +186,15 @@ export function scoreCategory(categoryId, values) {
   }
 }
 
-export function getPlayerTotal(player) {
-  return CATEGORY_IDS.reduce((total, categoryId) => total + (player.scores[categoryId] ?? 0), 0);
+export function getPlayerTotal(player: Player): number {
+  return CATEGORY_IDS.reduce(
+    (total, categoryId) => total + (player.scores[categoryId] ?? 0),
+    0
+  );
 }
 
-export function isGameComplete(players) {
-  return players.every((player) => CATEGORY_IDS.every((categoryId) => player.scores[categoryId] !== null));
+export function isGameComplete(players: Player[]): boolean {
+  return players.every((player) =>
+    CATEGORY_IDS.every((categoryId) => player.scores[categoryId] !== null)
+  );
 }

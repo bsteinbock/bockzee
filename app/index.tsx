@@ -9,7 +9,11 @@ import {
   View,
 } from 'react-native';
 
-import { SCORE_CATEGORIES, getPlayerTotal } from '../src/game-logic';
+import {
+  SCORE_CATEGORIES,
+  type CategoryId,
+  getPlayerTotal,
+} from '../src/game-logic';
 import { useGame } from '../src/game-context';
 
 export default function GameScreen() {
@@ -46,20 +50,22 @@ export default function GameScreen() {
     setIsPickerVisible(true);
   };
 
-  const handleCategoryPick = (categoryId) => {
+  const handleCategoryPick = (categoryId: CategoryId) => {
     const didScore = scoreCurrentCategory(categoryId);
     if (didScore) {
       setIsPickerVisible(false);
     }
   };
 
-  const getDisplayScore = (categoryId) => {
+  const getDisplayScore = (categoryId: CategoryId): number | string => {
     const savedScore = currentPlayer?.scores?.[categoryId];
-    if (savedScore !== null) {
+    if (savedScore !== null && savedScore !== undefined) {
       return savedScore;
     }
 
-    const previewScore = availableCategories.find((item) => item.id === categoryId)?.previewScore;
+    const previewScore = availableCategories.find(
+      (item) => item.id === categoryId
+    )?.previewScore;
     if (canScore && previewScore !== undefined) {
       return `+${previewScore}`;
     }
@@ -104,7 +110,9 @@ export default function GameScreen() {
 
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>Held dice</Text>
-          <Text style={styles.heldText}>{heldValues.length > 0 ? heldValues.join(', ') : 'None yet'}</Text>
+          <Text style={styles.heldText}>
+            {heldValues.length > 0 ? heldValues.join(', ') : 'None yet'}
+          </Text>
         </View>
 
         <View style={styles.buttonRow}>
@@ -128,7 +136,12 @@ export default function GameScreen() {
           <Text style={styles.sectionTitle}>Scoreboard</Text>
           {players.map((player) => (
             <View key={player.id} style={styles.playerRow}>
-              <Text style={[styles.playerRowText, currentPlayer?.id === player.id && styles.currentLabel]}>
+              <Text
+                style={[
+                  styles.playerRowText,
+                  currentPlayer?.id === player.id && styles.currentLabel,
+                ]}
+              >
                 {player.name}
               </Text>
               <Text style={styles.playerRowText}>{getPlayerTotal(player)}</Text>
@@ -153,9 +166,17 @@ export default function GameScreen() {
         </Pressable>
       </ScrollView>
 
-      <Modal animationType="slide" transparent visible={isPickerVisible} onRequestClose={() => setIsPickerVisible(false)}>
+      <Modal
+        animationType="slide"
+        transparent
+        visible={isPickerVisible}
+        onRequestClose={() => setIsPickerVisible(false)}
+      >
         <View style={styles.modalBackdrop}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={() => setIsPickerVisible(false)} />
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setIsPickerVisible(false)}
+          />
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>Choose a score entry</Text>
             <ScrollView style={styles.modalList}>
@@ -167,13 +188,18 @@ export default function GameScreen() {
                 >
                   <View>
                     <Text style={styles.modalOptionLabel}>{category.label}</Text>
-                    <Text style={styles.modalOptionHint}>{category.section} section</Text>
+                    <Text style={styles.modalOptionHint}>
+                      {category.section} section
+                    </Text>
                   </View>
                   <Text style={styles.modalOptionScore}>{category.previewScore}</Text>
                 </Pressable>
               ))}
             </ScrollView>
-            <Pressable onPress={() => setIsPickerVisible(false)} style={styles.secondaryButton}>
+            <Pressable
+              onPress={() => setIsPickerVisible(false)}
+              style={styles.secondaryButton}
+            >
               <Text style={styles.secondaryButtonText}>Cancel</Text>
             </Pressable>
           </View>
@@ -281,57 +307,58 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     flex: 1,
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: 'center',
     backgroundColor: '#0b57d0',
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  secondaryButton: {
-    borderWidth: 1,
-    borderColor: '#0b57d0',
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  disabledButton: {
-    opacity: 0.45,
   },
   primaryButtonText: {
     color: '#ffffff',
     fontWeight: '700',
     fontSize: 16,
   },
+  secondaryButton: {
+    flex: 1,
+    borderRadius: 14,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#111827',
+    backgroundColor: '#ffffff',
+  },
   secondaryButtonText: {
-    color: '#0b57d0',
+    color: '#111827',
     fontWeight: '700',
     fontSize: 16,
+  },
+  disabledButton: {
+    opacity: 0.45,
   },
   playerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 6,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#d1d5db',
   },
   playerRowText: {
     fontSize: 16,
     color: '#111827',
   },
   currentLabel: {
+    color: '#0b57d0',
     fontWeight: '700',
   },
   scoreRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 12,
-    paddingVertical: 4,
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#d1d5db',
   },
   scoreLabel: {
     flex: 1,
-    color: '#374151',
+    color: '#111827',
   },
   scoreValue: {
-    width: 54,
+    width: 64,
     textAlign: 'right',
     fontWeight: '700',
     color: '#111827',
@@ -349,8 +376,8 @@ const styles = StyleSheet.create({
   },
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(17, 24, 39, 0.5)',
     justifyContent: 'flex-end',
+    backgroundColor: 'rgba(15, 23, 42, 0.35)',
   },
   modalCard: {
     backgroundColor: '#ffffff',
@@ -358,7 +385,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     padding: 20,
     gap: 16,
-    maxHeight: '70%',
+    maxHeight: '72%',
   },
   modalTitle: {
     fontSize: 20,
@@ -375,10 +402,10 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#d1d5db',
+    gap: 12,
   },
   modalOptionLabel: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#111827',
   },
   modalOptionHint: {
