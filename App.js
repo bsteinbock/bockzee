@@ -59,7 +59,7 @@ export default function App() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Bockzee</Text>
-      <Text style={styles.subtitle}>Roll {rollCount + 1} of {MAX_ROLLS}</Text>
+      <Text style={styles.subtitle}>Rolls left: {MAX_ROLLS - rollCount}</Text>
 
       <View style={styles.diceRow}>
         {dice.map((die) => (
