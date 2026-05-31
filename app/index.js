@@ -155,6 +155,7 @@ export default function GameScreen() {
 
       <Modal animationType="slide" transparent visible={isPickerVisible} onRequestClose={() => setIsPickerVisible(false)}>
         <View style={styles.modalBackdrop}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setIsPickerVisible(false)} />
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>Choose a score entry</Text>
             <ScrollView style={styles.modalList}>

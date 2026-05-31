@@ -43,7 +43,7 @@ export const SCORE_CATEGORIES = [
   },
   {
     id: 'bockzee',
-    label: 'Bockzee',
+    label: 'Bockzee (5 of a kind)',
     section: 'Lower',
     description: 'Five of a kind scores 50 points.',
   },
