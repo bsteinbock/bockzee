@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 const TOTAL_DICE = 5;
 const MAX_ROLLS = 3;
@@ -21,15 +21,34 @@ const SCORE_CATEGORIES = [
   { id: 'fullHouse', label: 'Full house', section: 'Lower' },
   { id: 'bockzee', label: 'BockZee (5 of a kind)', section: 'Lower' },
   { id: 'chance', label: 'Chance', section: 'Lower' },
-];
+] as const;
 
-const CATEGORY_IDS = SCORE_CATEGORIES.map((category) => category.id);
+const CATEGORY_IDS: CategoryId[] = SCORE_CATEGORIES.map((category) => category.id);
+const SCORE_SECTIONS = ['Upper', 'Lower'] as const;
 
-function randomDieValue() {
+type CategoryId = (typeof SCORE_CATEGORIES)[number]['id'];
+type ScoreSection = (typeof SCORE_CATEGORIES)[number]['section'];
+type Scores = Record<CategoryId, number | null>;
+type Die = {
+  id: number;
+  value: number;
+  held: boolean;
+};
+type Player = {
+  id: number;
+  name: string;
+  scores: Scores;
+};
+type CategorySelection = {
+  categoryId: CategoryId;
+  score: number;
+};
+
+function randomDieValue(): number {
   return Math.floor(Math.random() * 6) + 1;
 }
 
-function createDice() {
+function createDice(): Die[] {
   return Array.from({ length: TOTAL_DICE }, (_, id) => ({
     id,
     value: randomDieValue(),
@@ -37,14 +56,14 @@ function createDice() {
   }));
 }
 
-function getInitialScores() {
-  return CATEGORY_IDS.reduce((scores, categoryId) => {
+function getInitialScores(): Scores {
+  return CATEGORY_IDS.reduce<Scores>((scores, categoryId) => {
     scores[categoryId] = null;
     return scores;
-  }, {});
+  }, {} as Scores);
 }
 
-function createPlayers(playerCount) {
+function createPlayers(playerCount: number): Player[] {
   return Array.from({ length: playerCount }, (_, index) => ({
     id: index,
     name: `Player ${index + 1}`,
@@ -52,22 +71,22 @@ function createPlayers(playerCount) {
   }));
 }
 
-function getDiceValues(dice) {
+function getDiceValues(dice: Die[]): number[] {
   return dice.map((die) => die.value);
 }
 
-function getDiceSum(values) {
+function getDiceSum(values: number[]): number {
   return values.reduce((total, value) => total + value, 0);
 }
 
-function getValueCounts(values) {
-  return values.reduce((counts, value) => {
+function getValueCounts(values: number[]): Record<number, number> {
+  return values.reduce<Record<number, number>>((counts, value) => {
     counts[value] = (counts[value] ?? 0) + 1;
     return counts;
   }, {});
 }
 
-function hasStraight(uniqueValues, length) {
+function hasStraight(uniqueValues: number[], length: number): boolean {
   const sorted = [...new Set(uniqueValues)].sort((a, b) => a - b);
   let run = 1;
 
@@ -85,14 +104,14 @@ function hasStraight(uniqueValues, length) {
   return false;
 }
 
-function scoreCategory(categoryId, values) {
+function scoreCategory(categoryId: CategoryId, values: number[]): number {
   const counts = getValueCounts(values);
   const countValues = Object.values(counts);
   const sum = getDiceSum(values);
 
   switch (categoryId) {
     case 'ones':
-      return values.filter((value) => value === 1).length * 1;
+      return values.filter((value) => value === 1).length;
     case 'twos':
       return values.filter((value) => value === 2).length * 2;
     case 'threes':
@@ -122,20 +141,20 @@ function scoreCategory(categoryId, values) {
   }
 }
 
-function getPlayerTotal(player) {
+function getPlayerTotal(player: Player): number {
   return CATEGORY_IDS.reduce((total, categoryId) => {
     const score = player.scores[categoryId];
     return total + (score ?? 0);
   }, 0);
 }
 
-function isGameComplete(players) {
+function isGameComplete(players: Player[]): boolean {
   return players.every((player) =>
     CATEGORY_IDS.every((categoryId) => player.scores[categoryId] !== null)
   );
 }
 
-function chooseAutoCategory(player, values) {
+function chooseAutoCategory(player: Player, values: number[]): CategorySelection | null {
   const openCategories = SCORE_CATEGORIES.filter(
     (category) => player.scores[category.id] === null
   );
@@ -144,7 +163,7 @@ function chooseAutoCategory(player, values) {
     return null;
   }
 
-  return openCategories.reduce((best, category) => {
+  return openCategories.reduce<CategorySelection | null>((best, category) => {
     const candidateScore = scoreCategory(category.id, values);
 
     if (!best || candidateScore > best.score) {
@@ -157,9 +176,9 @@ function chooseAutoCategory(player, values) {
 
 export default function App() {
   const [playerCount, setPlayerCount] = useState(2);
-  const [players, setPlayers] = useState(() => createPlayers(2));
+  const [players, setPlayers] = useState<Player[]>(() => createPlayers(2));
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
-  const [dice, setDice] = useState(createDice);
+  const [dice, setDice] = useState<Die[]>(createDice);
   const [rollCount, setRollCount] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameOver, setGameOver] = useState(false);
@@ -173,7 +192,7 @@ export default function App() {
     .map((die) => die.value)
     .sort((a, b) => a - b);
 
-  const finishTurn = (updatedPlayers, actionMessage = '') => {
+  const finishTurn = (updatedPlayers: Player[], actionMessage = '') => {
     setPlayers(updatedPlayers);
     setLastAction(actionMessage);
 
@@ -187,7 +206,11 @@ export default function App() {
     setDice(createDice());
   };
 
-  const postScore = (categoryId, source = 'manual', sourceValues = diceValues) => {
+  const postScore = (
+    categoryId: CategoryId,
+    source: 'manual' | 'auto' = 'manual',
+    sourceValues: number[] = diceValues
+  ) => {
     if (!gameStarted || gameOver) {
       return;
     }
@@ -219,7 +242,7 @@ export default function App() {
     );
   };
 
-  const autoScoreAndAdvance = (finalDiceValues) => {
+  const autoScoreAndAdvance = (finalDiceValues: number[]) => {
     const selection = chooseAutoCategory(currentPlayer, finalDiceValues);
 
     if (!selection) {
@@ -254,7 +277,7 @@ export default function App() {
     setLastAction('');
   };
 
-  const toggleHeld = (dieId) => {
+  const toggleHeld = (dieId: number) => {
     if (!gameStarted || gameOver) {
       return;
     }
@@ -266,7 +289,7 @@ export default function App() {
     );
   };
 
-  const updatePlayerCount = (direction) => {
+  const updatePlayerCount = (direction: 'increase' | 'decrease') => {
     if (gameStarted) {
       return;
     }
@@ -301,7 +324,7 @@ export default function App() {
   };
 
   const winner = gameOver
-    ? players.reduce((best, player) => {
+    ? players.reduce<{ name: string; total: number } | null>((best, player) => {
         const total = getPlayerTotal(player);
 
         if (!best || total > best.total) {
@@ -373,46 +396,53 @@ export default function App() {
             {heldValues.length > 0 ? heldValues.join(', ') : 'None'}
           </Text>
 
-          <ScrollView style={styles.scoreSheet} contentContainerStyle={styles.scoreSheetContent}>
+          <ScrollView
+            style={styles.scoreSheet}
+            contentContainerStyle={styles.scoreSheetContent}
+          >
             <Text style={styles.sheetTitle}>Score sheet</Text>
-            {['Upper', 'Lower'].map((sectionName) => (
+            {SCORE_SECTIONS.map((sectionName) => (
               <View key={sectionName} style={styles.sectionBlock}>
                 <Text style={styles.sectionHeader}>{sectionName} section</Text>
-                {SCORE_CATEGORIES.filter((item) => item.section === sectionName).map(
-                  (category) => (
-                    <View key={category.id} style={styles.scoreRow}>
-                      <Text style={styles.categoryLabel}>{category.label}</Text>
-                      <View style={styles.scoreCells}>
-                        {players.map((player, index) => {
-                          const score = player.scores[category.id];
-                          const isCurrent = index === currentPlayerIndex;
-                          const canScore = !gameOver && isCurrent && score === null;
-                          const potentialScore = scoreCategory(category.id, diceValues);
+                {SCORE_CATEGORIES.filter(
+                  (item) => item.section === (sectionName as ScoreSection)
+                ).map((category) => (
+                  <View key={category.id} style={styles.scoreRow}>
+                    <Text style={styles.categoryLabel}>{category.label}</Text>
+                    <View style={styles.scoreCells}>
+                      {players.map((player, index) => {
+                        const score = player.scores[category.id];
+                        const isCurrent = index === currentPlayerIndex;
+                        const canScore = !gameOver && isCurrent && score === null;
+                        const potentialScore = scoreCategory(category.id, diceValues);
 
-                          return (
-                            <Pressable
-                              key={`${category.id}-${player.id}`}
-                              style={[
-                                styles.scoreCell,
-                                isCurrent && styles.currentPlayerCell,
-                                canScore && styles.scorableCell,
-                              ]}
-                              onPress={() => canScore && postScore(category.id)}
-                            >
-                              <Text style={styles.scoreCellText}>
-                                {score !== null
-                                  ? score
-                                  : canScore
-                                    ? `+${potentialScore}`
-                                    : '-'}
-                              </Text>
-                            </Pressable>
-                          );
-                        })}
-                      </View>
+                        return (
+                          <Pressable
+                            key={`${category.id}-${player.id}`}
+                            style={[
+                              styles.scoreCell,
+                              isCurrent && styles.currentPlayerCell,
+                              canScore && styles.scorableCell,
+                            ]}
+                            onPress={() => {
+                              if (canScore) {
+                                postScore(category.id);
+                              }
+                            }}
+                          >
+                            <Text style={styles.scoreCellText}>
+                              {score !== null
+                                ? score
+                                : canScore
+                                  ? `+${potentialScore}`
+                                  : '-'}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
                     </View>
-                  )
-                )}
+                  </View>
+                ))}
               </View>
             ))}
 
@@ -425,7 +455,9 @@ export default function App() {
                   </View>
                 ))}
               </View>
-              <Text style={styles.playerRow}>{players.map((player) => player.name).join(' • ')}</Text>
+              <Text style={styles.playerRow}>
+                {players.map((player) => player.name).join(' • ')}
+              </Text>
             </View>
           </ScrollView>
 
