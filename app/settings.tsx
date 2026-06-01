@@ -16,9 +16,11 @@ import {
   MIN_PLAYERS,
 } from '../src/game-logic';
 import { useGame } from '../src/game-context';
+import { useThemeColors } from '../src/theme';
 
 export default function SettingsScreen() {
   const { addPlayerSlot, applySettings, removePlayerSlot, settings } = useGame();
+  const colors = useThemeColors();
   const [playerNames, setPlayerNames] = useState(settings.playerNames);
   const [allowedRolls, setAllowedRolls] = useState(settings.allowedRolls);
 
@@ -34,20 +36,21 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Settings</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Settings</Text>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Player names</Text>
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Player names</Text>
           {playerNames.map((name, index) => (
             <View key={`player-${index}`} style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Player {index + 1}</Text>
+              <Text style={[styles.inputLabel, { color: colors.textSecondary }]}>Player {index + 1}</Text>
               <TextInput
                 value={name}
                 onChangeText={(value) => updatePlayerName(index, value)}
                 placeholder={`Player ${index + 1}`}
-                style={styles.input}
+                placeholderTextColor={colors.textMuted}
+                style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder, color: colors.inputText }]}
               />
             </View>
           ))}
@@ -55,23 +58,23 @@ export default function SettingsScreen() {
             <Pressable
               disabled={playerNames.length <= MIN_PLAYERS}
               onPress={() => setPlayerNames((currentNames) => removePlayerSlot(currentNames))}
-              style={[styles.smallButton, playerNames.length <= MIN_PLAYERS && styles.disabledButton]}
+              style={[styles.smallButton, { borderColor: colors.accent }, playerNames.length <= MIN_PLAYERS && styles.disabledButton]}
             >
-              <Text style={styles.smallButtonText}>Remove</Text>
+              <Text style={[styles.smallButtonText, { color: colors.accent }]}>Remove</Text>
             </Pressable>
             <Pressable
               disabled={playerNames.length >= MAX_PLAYERS}
               onPress={() => setPlayerNames((currentNames) => addPlayerSlot(currentNames))}
-              style={[styles.smallButton, playerNames.length >= MAX_PLAYERS && styles.disabledButton]}
+              style={[styles.smallButton, { borderColor: colors.accent }, playerNames.length >= MAX_PLAYERS && styles.disabledButton]}
             >
-              <Text style={styles.smallButtonText}>Add Player</Text>
+              <Text style={[styles.smallButtonText, { color: colors.accent }]}>Add Player</Text>
             </Pressable>
           </View>
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Allowed rolls</Text>
-          <Text style={styles.helperText}>Choose between {MIN_ALLOWED_ROLLS} and {MAX_ALLOWED_ROLLS} rolls per turn.</Text>
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Allowed rolls</Text>
+          <Text style={[styles.helperText, { color: colors.textMuted }]}>Choose between {MIN_ALLOWED_ROLLS} and {MAX_ALLOWED_ROLLS} rolls per turn.</Text>
           <View style={styles.rollOptions}>
             {Array.from({ length: MAX_ALLOWED_ROLLS - MIN_ALLOWED_ROLLS + 1 }, (_, offset) => {
               const value = MIN_ALLOWED_ROLLS + offset;
@@ -80,9 +83,9 @@ export default function SettingsScreen() {
                 <Pressable
                   key={value}
                   onPress={() => setAllowedRolls(value)}
-                  style={[styles.rollButton, isSelected && styles.rollButtonSelected]}
+                  style={[styles.rollButton, { backgroundColor: isSelected ? colors.buttonPrimaryBg : colors.rollButtonBg }]}
                 >
-                  <Text style={[styles.rollButtonText, isSelected && styles.rollButtonTextSelected]}>{value}</Text>
+                  <Text style={[styles.rollButtonText, { color: isSelected ? colors.buttonPrimaryText : colors.rollButtonText }]}>{value}</Text>
                 </Pressable>
               );
             })}
@@ -91,12 +94,12 @@ export default function SettingsScreen() {
 
         <Pressable
           onPress={() => applySettings({ playerNames, allowedRolls })}
-          style={styles.primaryButton}
+          style={[styles.primaryButton, { backgroundColor: colors.resetBg }]}
         >
-          <Text style={styles.primaryButtonText}>Save Settings</Text>
+          <Text style={[styles.primaryButtonText, { color: colors.resetText }]}>Save Settings</Text>
         </Pressable>
 
-        <Text style={styles.note}>Saving settings resets the current game so the new lineup and roll limit take effect.</Text>
+        <Text style={[styles.note, { color: colors.textMuted }]}>Saving settings resets the current game so the new lineup and roll limit take effect.</Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -105,7 +108,6 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
   },
   content: {
     paddingHorizontal: 16,
@@ -117,10 +119,8 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '700',
     textAlign: 'center',
-    color: '#111827',
   },
   card: {
-    backgroundColor: '#ffffff',
     borderRadius: 16,
     padding: 16,
     gap: 12,
@@ -133,22 +133,18 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
   },
   inputGroup: {
     gap: 6,
   },
   inputLabel: {
-    color: '#374151',
     fontWeight: '600',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#cbd5e1',
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 12,
-    backgroundColor: '#ffffff',
     fontSize: 16,
   },
   buttonRow: {
@@ -159,19 +155,17 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#0b57d0',
     paddingVertical: 12,
     alignItems: 'center',
   },
   smallButtonText: {
-    color: '#0b57d0',
     fontWeight: '700',
   },
   disabledButton: {
     opacity: 0.45,
   },
   helperText: {
-    color: '#4b5563',
+    fontSize: 14,
   },
   rollOptions: {
     flexDirection: 'row',
@@ -182,32 +176,21 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
-    backgroundColor: '#e5e7eb',
-  },
-  rollButtonSelected: {
-    backgroundColor: '#0b57d0',
   },
   rollButtonText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
-  },
-  rollButtonTextSelected: {
-    color: '#ffffff',
   },
   primaryButton: {
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
-    backgroundColor: '#111827',
   },
   primaryButtonText: {
-    color: '#ffffff',
     fontSize: 16,
     fontWeight: '700',
   },
   note: {
-    color: '#4b5563',
     textAlign: 'center',
     lineHeight: 20,
   },

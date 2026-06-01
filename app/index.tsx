@@ -15,6 +15,7 @@ import {
   getPlayerTotal,
 } from '../src/game-logic';
 import { useGame } from '../src/game-context';
+import { useThemeColors } from '../src/theme';
 
 export default function GameScreen() {
   const {
@@ -35,6 +36,7 @@ export default function GameScreen() {
     toggleHeld,
     winner,
   } = useGame();
+  const colors = useThemeColors();
   const [isPickerVisible, setIsPickerVisible] = useState(false);
 
   const currentTotal = useMemo(
@@ -73,44 +75,50 @@ export default function GameScreen() {
     return '-';
   };
 
-  return (
-    <SafeAreaView style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>BockZee</Text>
+  const themed = useThemedStyles(colors);
 
-        <View style={styles.card}>
-          <Text style={styles.cardLabel}>Current player</Text>
-          <Text style={styles.playerName}>{currentPlayer?.name ?? 'No player'}</Text>
-          <Text style={styles.helperText}>
+  return (
+    <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={[styles.title, { color: colors.text }]}>BockZee</Text>
+
+        <View style={[styles.card, themed.card]}>
+          <Text style={[styles.cardLabel, { color: colors.textMuted }]}>Current player</Text>
+          <Text style={[styles.playerName, { color: colors.text }]}>{currentPlayer?.name ?? 'No player'}</Text>
+          <Text style={[styles.helperText, { color: colors.textSecondary }]}>
             Roll {rollCount} of {settings.allowedRolls} • Total {currentTotal}
           </Text>
           {gameOver && winner ? (
-            <Text style={styles.winnerText}>
+            <Text style={[styles.winnerText, { color: colors.success }]}>
               Winner: {winner.name} with {winner.total}
             </Text>
           ) : null}
-          {lastAction ? <Text style={styles.lastAction}>{lastAction}</Text> : null}
+          {lastAction ? <Text style={[styles.lastAction, { color: colors.accent }]}>{lastAction}</Text> : null}
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Tap dice to hold them between rolls.</Text>
+        <View style={[styles.card, themed.card]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Tap dice to hold them between rolls.</Text>
           <View style={styles.diceRow}>
             {dice.map((die) => (
               <Pressable
                 key={die.id}
                 onPress={() => toggleHeld(die.id)}
-                style={[styles.die, die.held && styles.heldDie]}
+                style={[
+                  styles.die,
+                  { backgroundColor: colors.dieBg, borderColor: colors.dieBorder },
+                  die.held && { backgroundColor: colors.heldDieBg, borderColor: colors.heldDieBorder },
+                ]}
               >
-                <Text style={styles.dieValue}>{die.value}</Text>
-                <Text style={styles.dieCaption}>{die.held ? 'Held' : 'Tap'}</Text>
+                <Text style={[styles.dieValue, { color: colors.text }]}>{die.value}</Text>
+                <Text style={[styles.dieCaption, { color: colors.textMuted }]}>{die.held ? 'Held' : 'Tap'}</Text>
               </Pressable>
             ))}
           </View>
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Held dice</Text>
-          <Text style={styles.heldText}>
+        <View style={[styles.card, themed.card]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Held dice</Text>
+          <Text style={[styles.heldText, { color: colors.text }]}>
             {heldValues.length > 0 ? heldValues.join(', ') : 'None yet'}
           </Text>
         </View>
@@ -119,50 +127,51 @@ export default function GameScreen() {
           <Pressable
             disabled={!canRoll}
             onPress={rollDice}
-            style={[styles.primaryButton, !canRoll && styles.disabledButton]}
+            style={[styles.primaryButton, { backgroundColor: colors.buttonPrimaryBg }, !canRoll && styles.disabledButton]}
           >
-            <Text style={styles.primaryButtonText}>Roll Dice</Text>
+            <Text style={[styles.primaryButtonText, { color: colors.buttonPrimaryText }]}>Roll Dice</Text>
           </Pressable>
           <Pressable
             disabled={!canScore}
             onPress={openDonePicker}
-            style={[styles.secondaryButton, !canScore && styles.disabledButton]}
+            style={[styles.secondaryButton, { backgroundColor: colors.buttonSecondaryBg, borderColor: colors.buttonSecondaryBorder }, !canScore && styles.disabledButton]}
           >
-            <Text style={styles.secondaryButtonText}>Done</Text>
+            <Text style={[styles.secondaryButtonText, { color: colors.buttonSecondaryText }]}>Done</Text>
           </Pressable>
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Scoreboard</Text>
+        <View style={[styles.card, themed.card]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Scoreboard</Text>
           {players.map((player) => (
             <View key={player.id} style={styles.playerRow}>
               <Text
                 style={[
                   styles.playerRowText,
-                  currentPlayer?.id === player.id && styles.currentLabel,
+                  { color: colors.text },
+                  currentPlayer?.id === player.id && { color: colors.accent, fontWeight: '700' },
                 ]}
               >
                 {player.name}
               </Text>
-              <Text style={styles.playerRowText}>{getPlayerTotal(player)}</Text>
+              <Text style={[styles.playerRowText, { color: colors.text }]}>{getPlayerTotal(player)}</Text>
             </View>
           ))}
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Current player sheet</Text>
+        <View style={[styles.card, themed.card]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Current player sheet</Text>
           {SCORE_CATEGORIES.map((category) => {
             return (
-              <View key={category.id} style={styles.scoreRow}>
-                <Text style={styles.scoreLabel}>{category.label}</Text>
-                <Text style={styles.scoreValue}>{getDisplayScore(category.id)}</Text>
+              <View key={category.id} style={[styles.scoreRow, { borderBottomColor: colors.border }]}>
+                <Text style={[styles.scoreLabel, { color: colors.text }]}>{category.label}</Text>
+                <Text style={[styles.scoreValue, { color: colors.text }]}>{getDisplayScore(category.id)}</Text>
               </View>
             );
           })}
         </View>
 
-        <Pressable onPress={resetGame} style={styles.resetButton}>
-          <Text style={styles.resetButtonText}>Start Over</Text>
+        <Pressable onPress={resetGame} style={[styles.resetButton, { backgroundColor: colors.resetBg }]}>
+          <Text style={[styles.resetButtonText, { color: colors.resetText }]}>Start Over</Text>
         </Pressable>
       </ScrollView>
 
@@ -172,35 +181,35 @@ export default function GameScreen() {
         visible={isPickerVisible}
         onRequestClose={() => setIsPickerVisible(false)}
       >
-        <View style={styles.modalBackdrop}>
+        <View style={[styles.modalBackdrop, { backgroundColor: colors.modalBackdrop }]}>
           <Pressable
             style={StyleSheet.absoluteFill}
             onPress={() => setIsPickerVisible(false)}
           />
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Choose a score entry</Text>
+          <View style={[styles.modalCard, { backgroundColor: colors.card }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Choose a score entry</Text>
             <ScrollView style={styles.modalList}>
               {availableCategories.map((category) => (
                 <Pressable
                   key={category.id}
                   onPress={() => handleCategoryPick(category.id)}
-                  style={styles.modalOption}
+                  style={[styles.modalOption, { borderBottomColor: colors.border }]}
                 >
                   <View>
-                    <Text style={styles.modalOptionLabel}>{category.label}</Text>
-                    <Text style={styles.modalOptionHint}>
+                    <Text style={[styles.modalOptionLabel, { color: colors.text }]}>{category.label}</Text>
+                    <Text style={[styles.modalOptionHint, { color: colors.textMuted }]}>
                       {category.section} section
                     </Text>
                   </View>
-                  <Text style={styles.modalOptionScore}>{category.previewScore}</Text>
+                  <Text style={[styles.modalOptionScore, { color: colors.accent }]}>{category.previewScore}</Text>
                 </Pressable>
               ))}
             </ScrollView>
             <Pressable
               onPress={() => setIsPickerVisible(false)}
-              style={styles.secondaryButton}
+              style={[styles.secondaryButton, { backgroundColor: colors.buttonSecondaryBg, borderColor: colors.buttonSecondaryBorder }]}
             >
-              <Text style={styles.secondaryButtonText}>Cancel</Text>
+              <Text style={[styles.secondaryButtonText, { color: colors.buttonSecondaryText }]}>Cancel</Text>
             </Pressable>
           </View>
         </View>
@@ -209,10 +218,18 @@ export default function GameScreen() {
   );
 }
 
+function useThemedStyles(colors: ReturnType<typeof useThemeColors>) {
+  return useMemo(() => ({
+    card: {
+      backgroundColor: colors.card,
+      shadowColor: colors.text,
+    },
+  }), [colors]);
+}
+
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
   },
   content: {
     paddingHorizontal: 16,
@@ -224,14 +241,11 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '700',
     textAlign: 'center',
-    color: '#111827',
   },
   card: {
-    backgroundColor: '#ffffff',
     borderRadius: 16,
     padding: 16,
     gap: 10,
-    shadowColor: '#000000',
     shadowOpacity: 0.05,
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 8,
@@ -239,32 +253,26 @@ const styles = StyleSheet.create({
   },
   cardLabel: {
     fontSize: 14,
-    color: '#6b7280',
     textTransform: 'uppercase',
     letterSpacing: 0.6,
   },
   playerName: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#111827',
   },
   helperText: {
-    color: '#374151',
     fontSize: 15,
   },
   winnerText: {
-    color: '#166534',
     fontWeight: '700',
     fontSize: 16,
   },
   lastAction: {
-    color: '#1d4ed8',
     fontWeight: '600',
   },
   sectionTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#111827',
   },
   diceRow: {
     flexDirection: 'row',
@@ -277,29 +285,20 @@ const styles = StyleSheet.create({
     minWidth: 58,
     aspectRatio: 1,
     borderRadius: 14,
-    backgroundColor: '#eff6ff',
     borderWidth: 1,
-    borderColor: '#bfdbfe',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
   },
-  heldDie: {
-    backgroundColor: '#dcfce7',
-    borderColor: '#22c55e',
-  },
   dieValue: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#111827',
   },
   dieCaption: {
     fontSize: 12,
-    color: '#4b5563',
   },
   heldText: {
     fontSize: 18,
-    color: '#111827',
   },
   buttonRow: {
     flexDirection: 'row',
@@ -310,10 +309,8 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
-    backgroundColor: '#0b57d0',
   },
   primaryButtonText: {
-    color: '#ffffff',
     fontWeight: '700',
     fontSize: 16,
   },
@@ -323,11 +320,8 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#111827',
-    backgroundColor: '#ffffff',
   },
   secondaryButtonText: {
-    color: '#111827',
     fontWeight: '700',
     fontSize: 16,
   },
@@ -340,47 +334,35 @@ const styles = StyleSheet.create({
   },
   playerRowText: {
     fontSize: 16,
-    color: '#111827',
-  },
-  currentLabel: {
-    color: '#0b57d0',
-    fontWeight: '700',
   },
   scoreRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#d1d5db',
   },
   scoreLabel: {
     flex: 1,
-    color: '#111827',
   },
   scoreValue: {
     width: 64,
     textAlign: 'right',
     fontWeight: '700',
-    color: '#111827',
   },
   resetButton: {
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
-    backgroundColor: '#111827',
   },
   resetButtonText: {
-    color: '#ffffff',
     fontWeight: '700',
     fontSize: 16,
   },
   modalBackdrop: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(15, 23, 42, 0.35)',
   },
   modalCard: {
-    backgroundColor: '#ffffff',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 20,
@@ -390,7 +372,6 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#111827',
   },
   modalList: {
     maxHeight: 320,
@@ -401,20 +382,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#d1d5db',
     gap: 12,
   },
   modalOptionLabel: {
     fontWeight: '700',
-    color: '#111827',
   },
   modalOptionHint: {
-    color: '#6b7280',
     marginTop: 2,
   },
   modalOptionScore: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#0b57d0',
   },
 });
