@@ -1,6 +1,32 @@
 # bockzee
 
-Expo Router version of the BockZee scorekeeper with Game, Settings, and Doc tabs.
+A Yahtzee-style dice scorekeeper built with Expo and React Native. The app
+features three tabs—Game, Settings, and Doc—powered by expo-router.
+
+## Features
+
+- **Game tab** – Roll dice, hold between rolls, and score into standard Yahtzee
+  categories (upper section, lower section).
+- **Settings tab** – Configure player names (1–6 players) and the number of
+  allowed rolls per turn (3–5). Saving resets the current game.
+- **Doc tab** – In-app rules and scoring reference.
+- **Light/Dark theme** – Automatically adapts to the device's system color
+  scheme using React Native's `useColorScheme` hook. A shared theme utility
+  (`src/theme.ts`) provides consistent colors across all screens.
+
+## Project structure
+
+```
+app/
+  _layout.tsx    – Root tab navigator with theme-aware tab bar
+  index.tsx      – Game screen
+  settings.tsx   – Settings screen
+  doc.tsx        – Rules/documentation screen
+src/
+  game-context.tsx – React context providing game state and actions
+  game-logic.ts   – Pure scoring logic and type definitions
+  theme.ts        – Light/dark color palettes and useThemeColors hook
+```
 
 ## Running locally
 
@@ -16,5 +42,8 @@ Expo Router version of the BockZee scorekeeper with Game, Settings, and Doc tabs
 
 ## TypeScript
 
-The main game screen now lives in `app/index.tsx`, and the shared state and
-scoring logic are type-checked in `src/game-context.tsx` and `src/game-logic.ts`.
+All source files are written in TypeScript. Run type-checking with:
+
+```bash
+npx tsc --noEmit
+```

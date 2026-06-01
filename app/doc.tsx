@@ -1,6 +1,7 @@
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { SCORE_CATEGORIES } from '../src/game-logic';
+import { useThemeColors } from '../src/theme';
 
 const RULES = [
   'Each turn starts with up to five dice in play.',
@@ -12,29 +13,31 @@ const RULES = [
 ];
 
 export default function DocScreen() {
-  return (
-    <SafeAreaView style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>How to Play</Text>
+  const colors = useThemeColors();
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Rules</Text>
+  return (
+    <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={[styles.title, { color: colors.text }]}>How to Play</Text>
+
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Rules</Text>
           {RULES.map((rule, index) => (
-            <Text key={rule} style={styles.bodyText}>
+            <Text key={rule} style={[styles.bodyText, { color: colors.textSecondary }]}>
               {index + 1}. {rule}
             </Text>
           ))}
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Scoring</Text>
+        <View style={[styles.card, { backgroundColor: colors.card }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Scoring</Text>
           {['Upper', 'Lower'].map((section) => (
             <View key={section} style={styles.group}>
-              <Text style={styles.groupTitle}>{section} section</Text>
+              <Text style={[styles.groupTitle, { color: colors.accent }]}>{section} section</Text>
               {SCORE_CATEGORIES.filter((category) => category.section === section).map((category) => (
                 <View key={category.id} style={styles.scoreRow}>
-                  <Text style={styles.scoreLabel}>{category.label}</Text>
-                  <Text style={styles.scoreDescription}>{category.description}</Text>
+                  <Text style={[styles.scoreLabel, { color: colors.text }]}>{category.label}</Text>
+                  <Text style={[styles.scoreDescription, { color: colors.textSecondary }]}>{category.description}</Text>
                 </View>
               ))}
             </View>
@@ -48,7 +51,6 @@ export default function DocScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
   },
   content: {
     paddingHorizontal: 16,
@@ -60,10 +62,8 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '700',
     textAlign: 'center',
-    color: '#111827',
   },
   card: {
-    backgroundColor: '#ffffff',
     borderRadius: 16,
     padding: 16,
     gap: 14,
@@ -76,10 +76,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#111827',
   },
   bodyText: {
-    color: '#374151',
     lineHeight: 22,
   },
   group: {
@@ -88,17 +86,14 @@ const styles = StyleSheet.create({
   groupTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#0b57d0',
   },
   scoreRow: {
     gap: 4,
   },
   scoreLabel: {
     fontWeight: '700',
-    color: '#111827',
   },
   scoreDescription: {
-    color: '#374151',
     lineHeight: 20,
   },
 });
