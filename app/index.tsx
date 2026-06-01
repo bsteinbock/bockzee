@@ -1,8 +1,14 @@
 import { useMemo, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { SCORE_CATEGORIES, type CategoryId, getPlayerTotal } from '../src/game-logic';
+import {
+  SCORE_CATEGORIES,
+  UPPER_BONUS_THRESHOLD,
+  type CategoryId,
+  getPlayerTotal,
+  getUpperBonus,
+} from '../src/game-logic';
 import { useGame } from '../src/game-context';
 import { useThemeColors } from '../src/theme';
 
@@ -20,6 +26,7 @@ export default function GameScreen() {
     resetGame,
     rollCount,
     rollDice,
+    scoringHint,
     scoreCurrentCategory,
     settings,
     toggleHeld,
@@ -29,6 +36,14 @@ export default function GameScreen() {
   const [isPickerVisible, setIsPickerVisible] = useState(false);
 
   const currentTotal = useMemo(() => (currentPlayer ? getPlayerTotal(currentPlayer) : 0), [currentPlayer]);
+  const upperBonus = useMemo(() => (currentPlayer ? getUpperBonus(currentPlayer) : 0), [currentPlayer]);
+  const bockzeeBonus = useMemo(() => currentPlayer?.bockzeeBonus ?? 0, [currentPlayer]);
+  const hasGameStarted = useMemo(
+    () =>
+      rollCount > 0 ||
+      players.some((player) => SCORE_CATEGORIES.some((category) => player.scores[category.id] !== null)),
+    [players, rollCount],
+  );
 
   const openDonePicker = () => {
     if (!canScore) {
@@ -43,6 +58,18 @@ export default function GameScreen() {
     if (didScore) {
       setIsPickerVisible(false);
     }
+  };
+
+  const handleResetGame = () => {
+    if (!gameOver && hasGameStarted) {
+      Alert.alert('Restart game?', 'Your current progress will be lost.', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Restart', style: 'destructive', onPress: resetGame },
+      ]);
+      return;
+    }
+
+    resetGame();
   };
 
   const getDisplayScore = (categoryId: CategoryId): number | string => {
@@ -64,29 +91,32 @@ export default function GameScreen() {
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.title, { color: colors.text }]}>BockZee</Text>
+        <View style={styles.titleRow}>
+          <Text style={[styles.title, { color: colors.text }]}>BockZee</Text>
+          <Image source={require('../assets/icon.png')} style={styles.titleIcon} />
+        </View>
 
         <View style={[styles.card, themed.card]}>
-          <Text style={[styles.cardLabel, { color: colors.textMuted }]}>Current player</Text>
+          <View style={styles.cardHeaderRow}>
+            <Text style={[styles.cardLabel, { color: colors.textMuted }]}>Current player</Text>
+            <Text style={[styles.helperText, { color: colors.textSecondary }]}>
+              Roll {rollCount} of {settings.allowedRolls}
+            </Text>
+          </View>
           <Text style={[styles.playerName, { color: colors.text }]}>
             {currentPlayer?.name ?? 'No player'}
           </Text>
-          <Text style={[styles.helperText, { color: colors.textSecondary }]}>
-            Roll {rollCount} of {settings.allowedRolls} • Total {currentTotal}
-          </Text>
+
           {gameOver && winner ? (
             <Text style={[styles.winnerText, { color: colors.success }]}>
               Winner: {winner.name} with {winner.total}
             </Text>
           ) : null}
-          {lastAction ? (
-            <Text style={[styles.lastAction, { color: colors.accent }]}>{lastAction}</Text>
-          ) : null}
         </View>
 
         <View style={[styles.card, themed.card]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            Tap dice to hold them between rolls.
+            {rollCount === 0 ? 'Tap Roll Dice to get started' : 'Tap dice to hold them.'}
           </Text>
           <View style={styles.diceRow}>
             {dice.map((die) => (
@@ -99,20 +129,12 @@ export default function GameScreen() {
                   die.held && { backgroundColor: colors.heldDieBg, borderColor: colors.heldDieBorder },
                 ]}
               >
-                <Text style={[styles.dieValue, { color: colors.text }]}>{die.value}</Text>
-                <Text style={[styles.dieCaption, { color: colors.textMuted }]}>
-                  {die.held ? 'Held' : 'Tap'}
+                <Text style={[styles.dieValue, { color: colors.text }]}>
+                  {rollCount === 0 ? '?' : die.value}
                 </Text>
               </Pressable>
             ))}
           </View>
-        </View>
-
-        <View style={[styles.card, themed.card]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Held dice</Text>
-          <Text style={[styles.heldText, { color: colors.text }]}>
-            {heldValues.length > 0 ? heldValues.join(', ') : 'None yet'}
-          </Text>
         </View>
 
         <View style={styles.buttonRow}>
@@ -141,6 +163,35 @@ export default function GameScreen() {
         </View>
 
         <View style={[styles.card, themed.card]}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Current player score sheet</Text>
+          {SCORE_CATEGORIES.map((category) => {
+            return (
+              <View key={category.id}>
+                <View style={[styles.scoreRow, { borderBottomColor: colors.border }]}>
+                  <Text style={[styles.scoreLabel, { color: colors.text }]}>{category.label}</Text>
+                  <Text style={[styles.scoreValue, { color: colors.text }]}>
+                    {getDisplayScore(category.id)}
+                  </Text>
+                </View>
+                {category.id === 'sixes' ? (
+                  <View style={[styles.scoreRow, { borderBottomColor: colors.border }]}>
+                    <Text style={[styles.scoreLabel, { color: colors.text }]}>
+                      Bonus (if upper total {`>=`} {UPPER_BONUS_THRESHOLD})
+                    </Text>
+                    <Text style={[styles.scoreValue, { color: colors.text }]}>{upperBonus}</Text>
+                  </View>
+                ) : null}
+                {category.id === 'bockzee' ? (
+                  <View style={[styles.scoreRow, { borderBottomColor: colors.border }]}>
+                    <Text style={[styles.scoreLabel, { color: colors.text }]}>Bockzee Bonus (+100 each)</Text>
+                    <Text style={[styles.scoreValue, { color: colors.text }]}>{bockzeeBonus}</Text>
+                  </View>
+                ) : null}
+              </View>
+            );
+          })}
+        </View>
+        <View style={[styles.card, themed.card]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Scoreboard</Text>
           {players.map((player) => (
             <View key={player.id} style={styles.playerRow}>
@@ -158,21 +209,10 @@ export default function GameScreen() {
           ))}
         </View>
 
-        <View style={[styles.card, themed.card]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Current player sheet</Text>
-          {SCORE_CATEGORIES.map((category) => {
-            return (
-              <View key={category.id} style={[styles.scoreRow, { borderBottomColor: colors.border }]}>
-                <Text style={[styles.scoreLabel, { color: colors.text }]}>{category.label}</Text>
-                <Text style={[styles.scoreValue, { color: colors.text }]}>
-                  {getDisplayScore(category.id)}
-                </Text>
-              </View>
-            );
-          })}
-        </View>
-
-        <Pressable onPress={resetGame} style={[styles.resetButton, { backgroundColor: colors.resetBg }]}>
+        <Pressable
+          onPress={handleResetGame}
+          style={[styles.resetButton, { backgroundColor: colors.resetBg }]}
+        >
           <Text style={[styles.resetButtonText, { color: colors.resetText }]}>Start Over</Text>
         </Pressable>
       </ScrollView>
@@ -187,6 +227,9 @@ export default function GameScreen() {
           <Pressable style={StyleSheet.absoluteFill} onPress={() => setIsPickerVisible(false)} />
           <View style={[styles.modalCard, { backgroundColor: colors.card }]}>
             <Text style={[styles.modalTitle, { color: colors.text }]}>Choose a score entry</Text>
+            {scoringHint ? (
+              <Text style={[styles.modalHint, { color: colors.accent }]}>{scoringHint}</Text>
+            ) : null}
             <ScrollView style={styles.modalList}>
               {availableCategories.map((category) => (
                 <Pressable
@@ -247,7 +290,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: '700',
-    textAlign: 'center',
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  titleIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 8,
   },
   card: {
     borderRadius: 16,
@@ -262,6 +315,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textTransform: 'uppercase',
     letterSpacing: 0.6,
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 8,
   },
   playerName: {
     fontSize: 28,
@@ -284,18 +343,18 @@ const styles = StyleSheet.create({
   diceRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 10,
   },
   die: {
-    width: '18%',
-    minWidth: 58,
+    minWidth: 56,
     aspectRatio: 1,
     borderRadius: 14,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
+    gap: 2,
   },
   dieValue: {
     fontSize: 28,
@@ -379,6 +438,10 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '700',
+  },
+  modalHint: {
+    fontSize: 14,
+    lineHeight: 20,
   },
   modalList: {
     maxHeight: 320,

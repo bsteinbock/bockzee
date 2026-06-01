@@ -11,6 +11,8 @@ const RULES = [
   'Tap Done when you want to lock the roll into an open score entry.',
   'After scoring, the next player starts a fresh turn with all five dice available.',
   'When every score entry is filled for every player, the highest total wins.',
+  'Bockzee Bonus: if you roll another five-of-a-kind after scoring 50 in Bockzee, you gain +100 each time, but must score that roll in another category.',
+  'Bockzee Joker rule: if the matching upper category is open you must use it; otherwise you may score any open lower category, and the roll counts for Full House, Small Straight, or Large Straight.',
 ];
 
 export default function DocScreen() {

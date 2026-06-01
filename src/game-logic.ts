@@ -3,6 +3,9 @@ export const MIN_PLAYERS = 1;
 export const MAX_PLAYERS = 6;
 export const MIN_ALLOWED_ROLLS = 3;
 export const MAX_ALLOWED_ROLLS = 5;
+export const UPPER_BONUS_THRESHOLD = 63;
+export const UPPER_BONUS_POINTS = 35;
+export const BOCKZEE_BONUS_POINTS = 100;
 
 export const SCORE_CATEGORIES = [
   { id: 'ones', label: 'Ones', section: 'Upper', description: 'Add only the dice showing 1.' },
@@ -66,14 +69,17 @@ export type Player = {
   id: number;
   name: string;
   scores: Scores;
+  bockzeeBonus: number;
 };
 export type CategoryPreview = (typeof SCORE_CATEGORIES)[number] & {
   previewScore: number;
 };
 
-export const CATEGORY_IDS: CategoryId[] = SCORE_CATEGORIES.map(
-  (category) => category.id
-) as CategoryId[];
+export const CATEGORY_IDS: CategoryId[] = SCORE_CATEGORIES.map((category) => category.id) as CategoryId[];
+export const UPPER_CATEGORY_IDS: CategoryId[] = ['ones', 'twos', 'threes', 'fours', 'fives', 'sixes'];
+export const LOWER_CATEGORY_IDS: CategoryId[] = SCORE_CATEGORIES.filter(
+  (category) => category.section === 'Lower',
+).map((category) => category.id) as CategoryId[];
 
 export function randomDieValue(): number {
   return Math.floor(Math.random() * 6) + 1;
@@ -102,10 +108,7 @@ export function normalizePlayerNames(playerNames: string[]): string[] {
 
   const fallbackCount = Math.max(MIN_PLAYERS, trimmedNames.length);
 
-  return Array.from(
-    { length: fallbackCount },
-    (_, index) => trimmedNames[index] || `Player ${index + 1}`
-  );
+  return Array.from({ length: fallbackCount }, (_, index) => trimmedNames[index] || `Player ${index + 1}`);
 }
 
 export function createPlayers(playerNames: string[]): Player[] {
@@ -113,11 +116,26 @@ export function createPlayers(playerNames: string[]): Player[] {
     id: index,
     name,
     scores: getInitialScores(),
+    bockzeeBonus: 0,
   }));
 }
 
 export function getDiceValues(dice: Die[]): number[] {
   return dice.map((die) => die.value);
+}
+
+export function sortDiceByHoldAndValue(dice: Die[]): Die[] {
+  return [...dice].sort((a, b) => {
+    if (a.held !== b.held) {
+      return a.held ? -1 : 1;
+    }
+
+    if (a.value !== b.value) {
+      return a.value - b.value;
+    }
+
+    return a.id - b.id;
+  });
 }
 
 export function getDiceSum(values: number[]): number {
@@ -129,6 +147,29 @@ export function getValueCounts(values: number[]): Record<number, number> {
     counts[value] = (counts[value] ?? 0) + 1;
     return counts;
   }, {});
+}
+
+export function isBockzee(values: number[]): boolean {
+  return Object.values(getValueCounts(values)).includes(5);
+}
+
+export function getUpperCategoryIdForDieValue(value: number): CategoryId | null {
+  switch (value) {
+    case 1:
+      return 'ones';
+    case 2:
+      return 'twos';
+    case 3:
+      return 'threes';
+    case 4:
+      return 'fours';
+    case 5:
+      return 'fives';
+    case 6:
+      return 'sixes';
+    default:
+      return null;
+  }
 }
 
 function hasStraight(values: number[], length: number): boolean {
@@ -149,7 +190,12 @@ function hasStraight(values: number[], length: number): boolean {
   return false;
 }
 
-export function scoreCategory(categoryId: CategoryId, values: number[]): number {
+export function scoreCategory(
+  categoryId: CategoryId,
+  values: number[],
+  options?: { useJokerRule?: boolean },
+): number {
+  const useJokerRule = options?.useJokerRule ?? false;
   const counts = getValueCounts(values);
   const countValues = Object.values(counts);
   const sum = getDiceSum(values);
@@ -172,11 +218,11 @@ export function scoreCategory(categoryId: CategoryId, values: number[]): number 
     case 'fourKind':
       return countValues.some((count) => count >= 4) ? sum : 0;
     case 'smallStraight':
-      return hasStraight(values, 4) ? 30 : 0;
+      return hasStraight(values, 4) || useJokerRule ? 30 : 0;
     case 'largeStraight':
-      return hasStraight(values, 5) ? 40 : 0;
+      return hasStraight(values, 5) || useJokerRule ? 40 : 0;
     case 'fullHouse':
-      return countValues.includes(3) && countValues.includes(2) ? 25 : 0;
+      return (countValues.includes(3) && countValues.includes(2)) || useJokerRule ? 25 : 0;
     case 'bockzee':
       return countValues.includes(5) ? 50 : 0;
     case 'chance':
@@ -187,14 +233,21 @@ export function scoreCategory(categoryId: CategoryId, values: number[]): number 
 }
 
 export function getPlayerTotal(player: Player): number {
-  return CATEGORY_IDS.reduce(
-    (total, categoryId) => total + (player.scores[categoryId] ?? 0),
-    0
+  return (
+    CATEGORY_IDS.reduce((total, categoryId) => total + (player.scores[categoryId] ?? 0), 0) +
+    getUpperBonus(player) +
+    player.bockzeeBonus
   );
 }
 
+export function getUpperSectionTotal(player: Player): number {
+  return UPPER_CATEGORY_IDS.reduce((total, categoryId) => total + (player.scores[categoryId] ?? 0), 0);
+}
+
+export function getUpperBonus(player: Player): number {
+  return getUpperSectionTotal(player) >= UPPER_BONUS_THRESHOLD ? UPPER_BONUS_POINTS : 0;
+}
+
 export function isGameComplete(players: Player[]): boolean {
-  return players.every((player) =>
-    CATEGORY_IDS.every((categoryId) => player.scores[categoryId] !== null)
-  );
+  return players.every((player) => CATEGORY_IDS.every((categoryId) => player.scores[categoryId] !== null));
 }

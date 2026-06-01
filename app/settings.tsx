@@ -7,7 +7,7 @@ import { useGame } from '../src/game-context';
 import { useThemeColors } from '../src/theme';
 
 export default function SettingsScreen() {
-  const { addPlayerSlot, applySettings, removePlayerSlot, settings } = useGame();
+  const { addPlayerSlot, applySettings, removePlayerSlot, savePlayerNames, settings } = useGame();
   const colors = useThemeColors();
   const [playerNames, setPlayerNames] = useState(settings.playerNames);
   const [allowedRolls, setAllowedRolls] = useState(settings.allowedRolls);
@@ -36,6 +36,7 @@ export default function SettingsScreen() {
               <TextInput
                 value={name}
                 onChangeText={(value) => updatePlayerName(index, value)}
+                onBlur={() => savePlayerNames(playerNames)}
                 placeholder={`Player ${index + 1}`}
                 placeholderTextColor={colors.textMuted}
                 style={[
@@ -115,7 +116,7 @@ export default function SettingsScreen() {
         </Pressable>
 
         <Text style={[styles.note, { color: colors.textMuted }]}>
-          Saving settings resets the current game so the new lineup and roll limit take effect.
+          Name edits save when you leave a field. Saving lineup or roll-limit changes resets the game.
         </Text>
       </ScrollView>
     </SafeAreaView>
