@@ -1,20 +1,8 @@
 import { useEffect, useState } from 'react';
-import {
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import {
-  MAX_ALLOWED_ROLLS,
-  MAX_PLAYERS,
-  MIN_ALLOWED_ROLLS,
-  MIN_PLAYERS,
-} from '../src/game-logic';
+import { MAX_ALLOWED_ROLLS, MAX_PLAYERS, MIN_ALLOWED_ROLLS, MIN_PLAYERS } from '../src/game-logic';
 import { useGame } from '../src/game-context';
 import { useThemeColors } from '../src/theme';
 
@@ -31,7 +19,7 @@ export default function SettingsScreen() {
 
   const updatePlayerName = (index: number, value: string) => {
     setPlayerNames((currentNames) =>
-      currentNames.map((name, currentIndex) => (currentIndex === index ? value : name))
+      currentNames.map((name, currentIndex) => (currentIndex === index ? value : name)),
     );
   };
 
@@ -50,7 +38,14 @@ export default function SettingsScreen() {
                 onChangeText={(value) => updatePlayerName(index, value)}
                 placeholder={`Player ${index + 1}`}
                 placeholderTextColor={colors.textMuted}
-                style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.inputBorder, color: colors.inputText }]}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.inputBg,
+                    borderColor: colors.inputBorder,
+                    color: colors.inputText,
+                  },
+                ]}
               />
             </View>
           ))}
@@ -58,14 +53,22 @@ export default function SettingsScreen() {
             <Pressable
               disabled={playerNames.length <= MIN_PLAYERS}
               onPress={() => setPlayerNames((currentNames) => removePlayerSlot(currentNames))}
-              style={[styles.smallButton, { borderColor: colors.accent }, playerNames.length <= MIN_PLAYERS && styles.disabledButton]}
+              style={[
+                styles.smallButton,
+                { borderColor: colors.accent },
+                playerNames.length <= MIN_PLAYERS && styles.disabledButton,
+              ]}
             >
               <Text style={[styles.smallButtonText, { color: colors.accent }]}>Remove</Text>
             </Pressable>
             <Pressable
               disabled={playerNames.length >= MAX_PLAYERS}
               onPress={() => setPlayerNames((currentNames) => addPlayerSlot(currentNames))}
-              style={[styles.smallButton, { borderColor: colors.accent }, playerNames.length >= MAX_PLAYERS && styles.disabledButton]}
+              style={[
+                styles.smallButton,
+                { borderColor: colors.accent },
+                playerNames.length >= MAX_PLAYERS && styles.disabledButton,
+              ]}
             >
               <Text style={[styles.smallButtonText, { color: colors.accent }]}>Add Player</Text>
             </Pressable>
@@ -74,7 +77,9 @@ export default function SettingsScreen() {
 
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Allowed rolls</Text>
-          <Text style={[styles.helperText, { color: colors.textMuted }]}>Choose between {MIN_ALLOWED_ROLLS} and {MAX_ALLOWED_ROLLS} rolls per turn.</Text>
+          <Text style={[styles.helperText, { color: colors.textMuted }]}>
+            Choose between {MIN_ALLOWED_ROLLS} and {MAX_ALLOWED_ROLLS} rolls per turn.
+          </Text>
           <View style={styles.rollOptions}>
             {Array.from({ length: MAX_ALLOWED_ROLLS - MIN_ALLOWED_ROLLS + 1 }, (_, offset) => {
               const value = MIN_ALLOWED_ROLLS + offset;
@@ -83,9 +88,19 @@ export default function SettingsScreen() {
                 <Pressable
                   key={value}
                   onPress={() => setAllowedRolls(value)}
-                  style={[styles.rollButton, { backgroundColor: isSelected ? colors.buttonPrimaryBg : colors.rollButtonBg }]}
+                  style={[
+                    styles.rollButton,
+                    { backgroundColor: isSelected ? colors.buttonPrimaryBg : colors.rollButtonBg },
+                  ]}
                 >
-                  <Text style={[styles.rollButtonText, { color: isSelected ? colors.buttonPrimaryText : colors.rollButtonText }]}>{value}</Text>
+                  <Text
+                    style={[
+                      styles.rollButtonText,
+                      { color: isSelected ? colors.buttonPrimaryText : colors.rollButtonText },
+                    ]}
+                  >
+                    {value}
+                  </Text>
                 </Pressable>
               );
             })}
@@ -99,7 +114,9 @@ export default function SettingsScreen() {
           <Text style={[styles.primaryButtonText, { color: colors.resetText }]}>Save Settings</Text>
         </Pressable>
 
-        <Text style={[styles.note, { color: colors.textMuted }]}>Saving settings resets the current game so the new lineup and roll limit take effect.</Text>
+        <Text style={[styles.note, { color: colors.textMuted }]}>
+          Saving settings resets the current game so the new lineup and roll limit take effect.
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );

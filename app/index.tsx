@@ -1,19 +1,8 @@
 import { useMemo, useState } from 'react';
-import {
-  Modal,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import {
-  SCORE_CATEGORIES,
-  type CategoryId,
-  getPlayerTotal,
-} from '../src/game-logic';
+import { SCORE_CATEGORIES, type CategoryId, getPlayerTotal } from '../src/game-logic';
 import { useGame } from '../src/game-context';
 import { useThemeColors } from '../src/theme';
 
@@ -39,10 +28,7 @@ export default function GameScreen() {
   const colors = useThemeColors();
   const [isPickerVisible, setIsPickerVisible] = useState(false);
 
-  const currentTotal = useMemo(
-    () => (currentPlayer ? getPlayerTotal(currentPlayer) : 0),
-    [currentPlayer]
-  );
+  const currentTotal = useMemo(() => (currentPlayer ? getPlayerTotal(currentPlayer) : 0), [currentPlayer]);
 
   const openDonePicker = () => {
     if (!canScore) {
@@ -65,9 +51,7 @@ export default function GameScreen() {
       return savedScore;
     }
 
-    const previewScore = availableCategories.find(
-      (item) => item.id === categoryId
-    )?.previewScore;
+    const previewScore = availableCategories.find((item) => item.id === categoryId)?.previewScore;
     if (canScore && previewScore !== undefined) {
       return `+${previewScore}`;
     }
@@ -84,7 +68,9 @@ export default function GameScreen() {
 
         <View style={[styles.card, themed.card]}>
           <Text style={[styles.cardLabel, { color: colors.textMuted }]}>Current player</Text>
-          <Text style={[styles.playerName, { color: colors.text }]}>{currentPlayer?.name ?? 'No player'}</Text>
+          <Text style={[styles.playerName, { color: colors.text }]}>
+            {currentPlayer?.name ?? 'No player'}
+          </Text>
           <Text style={[styles.helperText, { color: colors.textSecondary }]}>
             Roll {rollCount} of {settings.allowedRolls} • Total {currentTotal}
           </Text>
@@ -93,11 +79,15 @@ export default function GameScreen() {
               Winner: {winner.name} with {winner.total}
             </Text>
           ) : null}
-          {lastAction ? <Text style={[styles.lastAction, { color: colors.accent }]}>{lastAction}</Text> : null}
+          {lastAction ? (
+            <Text style={[styles.lastAction, { color: colors.accent }]}>{lastAction}</Text>
+          ) : null}
         </View>
 
         <View style={[styles.card, themed.card]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Tap dice to hold them between rolls.</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Tap dice to hold them between rolls.
+          </Text>
           <View style={styles.diceRow}>
             {dice.map((die) => (
               <Pressable
@@ -110,7 +100,9 @@ export default function GameScreen() {
                 ]}
               >
                 <Text style={[styles.dieValue, { color: colors.text }]}>{die.value}</Text>
-                <Text style={[styles.dieCaption, { color: colors.textMuted }]}>{die.held ? 'Held' : 'Tap'}</Text>
+                <Text style={[styles.dieCaption, { color: colors.textMuted }]}>
+                  {die.held ? 'Held' : 'Tap'}
+                </Text>
               </Pressable>
             ))}
           </View>
@@ -127,14 +119,22 @@ export default function GameScreen() {
           <Pressable
             disabled={!canRoll}
             onPress={rollDice}
-            style={[styles.primaryButton, { backgroundColor: colors.buttonPrimaryBg }, !canRoll && styles.disabledButton]}
+            style={[
+              styles.primaryButton,
+              { backgroundColor: colors.buttonPrimaryBg },
+              !canRoll && styles.disabledButton,
+            ]}
           >
             <Text style={[styles.primaryButtonText, { color: colors.buttonPrimaryText }]}>Roll Dice</Text>
           </Pressable>
           <Pressable
             disabled={!canScore}
             onPress={openDonePicker}
-            style={[styles.secondaryButton, { backgroundColor: colors.buttonSecondaryBg, borderColor: colors.buttonSecondaryBorder }, !canScore && styles.disabledButton]}
+            style={[
+              styles.secondaryButton,
+              { backgroundColor: colors.buttonSecondaryBg, borderColor: colors.buttonSecondaryBorder },
+              !canScore && styles.disabledButton,
+            ]}
           >
             <Text style={[styles.secondaryButtonText, { color: colors.buttonSecondaryText }]}>Done</Text>
           </Pressable>
@@ -164,7 +164,9 @@ export default function GameScreen() {
             return (
               <View key={category.id} style={[styles.scoreRow, { borderBottomColor: colors.border }]}>
                 <Text style={[styles.scoreLabel, { color: colors.text }]}>{category.label}</Text>
-                <Text style={[styles.scoreValue, { color: colors.text }]}>{getDisplayScore(category.id)}</Text>
+                <Text style={[styles.scoreValue, { color: colors.text }]}>
+                  {getDisplayScore(category.id)}
+                </Text>
               </View>
             );
           })}
@@ -182,10 +184,7 @@ export default function GameScreen() {
         onRequestClose={() => setIsPickerVisible(false)}
       >
         <View style={[styles.modalBackdrop, { backgroundColor: colors.modalBackdrop }]}>
-          <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={() => setIsPickerVisible(false)}
-          />
+          <Pressable style={StyleSheet.absoluteFill} onPress={() => setIsPickerVisible(false)} />
           <View style={[styles.modalCard, { backgroundColor: colors.card }]}>
             <Text style={[styles.modalTitle, { color: colors.text }]}>Choose a score entry</Text>
             <ScrollView style={styles.modalList}>
@@ -201,13 +200,18 @@ export default function GameScreen() {
                       {category.section} section
                     </Text>
                   </View>
-                  <Text style={[styles.modalOptionScore, { color: colors.accent }]}>{category.previewScore}</Text>
+                  <Text style={[styles.modalOptionScore, { color: colors.accent }]}>
+                    {category.previewScore}
+                  </Text>
                 </Pressable>
               ))}
             </ScrollView>
             <Pressable
               onPress={() => setIsPickerVisible(false)}
-              style={[styles.secondaryButton, { backgroundColor: colors.buttonSecondaryBg, borderColor: colors.buttonSecondaryBorder }]}
+              style={[
+                styles.secondaryButton,
+                { backgroundColor: colors.buttonSecondaryBg, borderColor: colors.buttonSecondaryBorder },
+              ]}
             >
               <Text style={[styles.secondaryButtonText, { color: colors.buttonSecondaryText }]}>Cancel</Text>
             </Pressable>
@@ -219,12 +223,15 @@ export default function GameScreen() {
 }
 
 function useThemedStyles(colors: ReturnType<typeof useThemeColors>) {
-  return useMemo(() => ({
-    card: {
-      backgroundColor: colors.card,
-      shadowColor: colors.text,
-    },
-  }), [colors]);
+  return useMemo(
+    () => ({
+      card: {
+        backgroundColor: colors.card,
+        shadowColor: colors.text,
+      },
+    }),
+    [colors],
+  );
 }
 
 const styles = StyleSheet.create({

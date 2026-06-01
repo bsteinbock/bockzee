@@ -1,4 +1,5 @@
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { SCORE_CATEGORIES } from '../src/game-logic';
 import { useThemeColors } from '../src/theme';
@@ -37,7 +38,9 @@ export default function DocScreen() {
               {SCORE_CATEGORIES.filter((category) => category.section === section).map((category) => (
                 <View key={category.id} style={styles.scoreRow}>
                   <Text style={[styles.scoreLabel, { color: colors.text }]}>{category.label}</Text>
-                  <Text style={[styles.scoreDescription, { color: colors.textSecondary }]}>{category.description}</Text>
+                  <Text style={[styles.scoreDescription, { color: colors.textSecondary }]}>
+                    {category.description}
+                  </Text>
                 </View>
               ))}
             </View>
