@@ -198,9 +198,7 @@ export function GameProvider({ children }: PropsWithChildren) {
     }
 
     setDice((currentDice) =>
-      sortDiceByHoldAndValue(
-        currentDice.map((die) => (die.id === dieId ? { ...die, held: !die.held } : die)),
-      ),
+      currentDice.map((die) => (die.id === dieId ? { ...die, held: !die.held } : die)),
     );
   };
 

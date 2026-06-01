@@ -93,7 +93,7 @@ export default function GameScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.titleRow}>
           <Text style={[styles.title, { color: colors.text }]}>BockZee</Text>
-          <Image source={require('../assets/icon.png')} style={styles.titleIcon} />
+          <Image source={require('../assets/icon-basic.png')} style={styles.titleIcon} />
         </View>
 
         <View style={[styles.card, themed.card]}>
