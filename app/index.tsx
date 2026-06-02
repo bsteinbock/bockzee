@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
@@ -30,6 +30,8 @@ export default function GameScreen() {
     toggleHeld,
     winner,
   } = useGame();
+  const colorScheme = useColorScheme();
+  const isDarkTheme = colorScheme === 'dark';
   const colors = useThemeColors();
 
   const currentTotal = useMemo(() => (currentPlayer ? getPlayerTotal(currentPlayer) : 0), [currentPlayer]);
@@ -79,7 +81,12 @@ export default function GameScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.titleRow}>
           <Text style={[styles.title, { color: colors.text }]}>BockZee</Text>
-          <Image source={require('../assets/icon-basic.png')} style={styles.titleIcon} />
+          <Image
+            source={
+              isDarkTheme ? require('../assets/icon-basic-dark.png') : require('../assets/icon-basic.png')
+            }
+            style={styles.titleIcon}
+          />
         </View>
 
         <View style={[styles.card, themed.card]}>
