@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { Entypo, Feather, Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import * as Updates from 'expo-updates';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { GameProvider } from '../src/game-context';
@@ -9,6 +11,29 @@ import { useStatusBarStyle, useThemeColors } from '../src/theme';
 export default function RootLayout() {
   const colors = useThemeColors();
   const statusBarStyle = useStatusBarStyle();
+
+  useEffect(() => {
+    const applyOtaUpdate = async () => {
+      if (__DEV__ || !Updates.isEnabled) {
+        return;
+      }
+
+      try {
+        const update = await Updates.checkForUpdateAsync();
+        if (!update.isAvailable) {
+          return;
+        }
+
+        await Updates.fetchUpdateAsync();
+        await Updates.reloadAsync();
+      } catch (error) {
+        // Keep app startup resilient if update checks fail.
+        console.warn('Failed to apply OTA update:', error);
+      }
+    };
+
+    void applyOtaUpdate();
+  }, []);
 
   return (
     <SafeAreaProvider>
