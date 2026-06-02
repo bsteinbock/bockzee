@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -13,6 +13,8 @@ import { useGame } from '../src/game-context';
 import { useThemeColors } from '../src/theme';
 
 export default function GameScreen() {
+  const scrollViewRef = useRef<ScrollView>(null);
+
   const {
     availableCategories,
     canRoll,
@@ -75,9 +77,14 @@ export default function GameScreen() {
 
   const themed = useThemedStyles(colors);
 
+  const handleUseCategory = (categoryId: CategoryId) => {
+    scoreCurrentCategory(categoryId);
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+  };
+
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView ref={scrollViewRef} contentContainerStyle={styles.content}>
         <View style={styles.titleRow}>
           <Text style={[styles.title, { color: colors.text }]}>BockZee</Text>
           <Image
@@ -162,7 +169,7 @@ export default function GameScreen() {
                   </Text>
                   {canUseCategory ? (
                     <Pressable
-                      onPress={() => scoreCurrentCategory(category.id)}
+                      onPress={() => handleUseCategory(category.id)}
                       style={[
                         styles.useButton,
                         {
