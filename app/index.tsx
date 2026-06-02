@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useMemo } from 'react';
+import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
@@ -20,8 +20,6 @@ export default function GameScreen() {
     currentPlayer,
     dice,
     gameOver,
-    heldValues,
-    lastAction,
     players,
     resetGame,
     rollCount,
@@ -33,32 +31,20 @@ export default function GameScreen() {
     winner,
   } = useGame();
   const colors = useThemeColors();
-  const [isPickerVisible, setIsPickerVisible] = useState(false);
 
   const currentTotal = useMemo(() => (currentPlayer ? getPlayerTotal(currentPlayer) : 0), [currentPlayer]);
   const upperBonus = useMemo(() => (currentPlayer ? getUpperBonus(currentPlayer) : 0), [currentPlayer]);
   const bockzeeBonus = useMemo(() => currentPlayer?.bockzeeBonus ?? 0, [currentPlayer]);
+  const availableCategoryMap = useMemo(
+    () => new Map(availableCategories.map((category) => [category.id, category])),
+    [availableCategories],
+  );
   const hasGameStarted = useMemo(
     () =>
       rollCount > 0 ||
       players.some((player) => SCORE_CATEGORIES.some((category) => player.scores[category.id] !== null)),
     [players, rollCount],
   );
-
-  const openDonePicker = () => {
-    if (!canScore) {
-      return;
-    }
-
-    setIsPickerVisible(true);
-  };
-
-  const handleCategoryPick = (categoryId: CategoryId) => {
-    const didScore = scoreCurrentCategory(categoryId);
-    if (didScore) {
-      setIsPickerVisible(false);
-    }
-  };
 
   const handleResetGame = () => {
     if (!gameOver && hasGameStarted) {
@@ -149,22 +135,18 @@ export default function GameScreen() {
           >
             <Text style={[styles.primaryButtonText, { color: colors.buttonPrimaryText }]}>Roll Dice</Text>
           </Pressable>
-          <Pressable
-            disabled={!canScore}
-            onPress={openDonePicker}
-            style={[
-              styles.secondaryButton,
-              { backgroundColor: colors.buttonSecondaryBg, borderColor: colors.buttonSecondaryBorder },
-              !canScore && styles.disabledButton,
-            ]}
-          >
-            <Text style={[styles.secondaryButtonText, { color: colors.buttonSecondaryText }]}>Done</Text>
-          </Pressable>
         </View>
 
         <View style={[styles.card, themed.card]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Current player score sheet</Text>
+          {scoringHint ? (
+            <Text style={[styles.scoringHint, { color: colors.accent }]}>{scoringHint}</Text>
+          ) : null}
           {SCORE_CATEGORIES.map((category) => {
+            const savedScore = currentPlayer?.scores?.[category.id];
+            const availableCategory = availableCategoryMap.get(category.id);
+            const canUseCategory = canScore && savedScore === null && Boolean(availableCategory);
+
             return (
               <View key={category.id}>
                 <View style={[styles.scoreRow, { borderBottomColor: colors.border }]}>
@@ -172,6 +154,22 @@ export default function GameScreen() {
                   <Text style={[styles.scoreValue, { color: colors.text }]}>
                     {getDisplayScore(category.id)}
                   </Text>
+                  {canUseCategory ? (
+                    <Pressable
+                      onPress={() => scoreCurrentCategory(category.id)}
+                      style={[
+                        styles.useButton,
+                        {
+                          backgroundColor: colors.buttonSecondaryBg,
+                          borderColor: colors.buttonSecondaryBorder,
+                        },
+                      ]}
+                    >
+                      <Text style={[styles.useButtonText, { color: colors.buttonSecondaryText }]}>Use</Text>
+                    </Pressable>
+                  ) : (
+                    <View style={styles.useButtonPlaceholder} />
+                  )}
                 </View>
                 {category.id === 'sixes' ? (
                   <View style={[styles.scoreRow, { borderBottomColor: colors.border }]}>
@@ -179,12 +177,14 @@ export default function GameScreen() {
                       Bonus (if upper total {`>=`} {UPPER_BONUS_THRESHOLD})
                     </Text>
                     <Text style={[styles.scoreValue, { color: colors.text }]}>{upperBonus}</Text>
+                    <View style={styles.useButtonPlaceholder} />
                   </View>
                 ) : null}
                 {category.id === 'bockzee' ? (
                   <View style={[styles.scoreRow, { borderBottomColor: colors.border }]}>
                     <Text style={[styles.scoreLabel, { color: colors.text }]}>Bockzee Bonus (+100 each)</Text>
                     <Text style={[styles.scoreValue, { color: colors.text }]}>{bockzeeBonus}</Text>
+                    <View style={styles.useButtonPlaceholder} />
                   </View>
                 ) : null}
               </View>
@@ -216,51 +216,6 @@ export default function GameScreen() {
           <Text style={[styles.resetButtonText, { color: colors.resetText }]}>Start Over</Text>
         </Pressable>
       </ScrollView>
-
-      <Modal
-        animationType="slide"
-        transparent
-        visible={isPickerVisible}
-        onRequestClose={() => setIsPickerVisible(false)}
-      >
-        <View style={[styles.modalBackdrop, { backgroundColor: colors.modalBackdrop }]}>
-          <Pressable style={StyleSheet.absoluteFill} onPress={() => setIsPickerVisible(false)} />
-          <View style={[styles.modalCard, { backgroundColor: colors.card }]}>
-            <Text style={[styles.modalTitle, { color: colors.text }]}>Choose a score entry</Text>
-            {scoringHint ? (
-              <Text style={[styles.modalHint, { color: colors.accent }]}>{scoringHint}</Text>
-            ) : null}
-            <ScrollView style={styles.modalList}>
-              {availableCategories.map((category) => (
-                <Pressable
-                  key={category.id}
-                  onPress={() => handleCategoryPick(category.id)}
-                  style={[styles.modalOption, { borderBottomColor: colors.border }]}
-                >
-                  <View>
-                    <Text style={[styles.modalOptionLabel, { color: colors.text }]}>{category.label}</Text>
-                    <Text style={[styles.modalOptionHint, { color: colors.textMuted }]}>
-                      {category.section} section
-                    </Text>
-                  </View>
-                  <Text style={[styles.modalOptionScore, { color: colors.accent }]}>
-                    {category.previewScore}
-                  </Text>
-                </Pressable>
-              ))}
-            </ScrollView>
-            <Pressable
-              onPress={() => setIsPickerVisible(false)}
-              style={[
-                styles.secondaryButton,
-                { backgroundColor: colors.buttonSecondaryBg, borderColor: colors.buttonSecondaryBorder },
-              ]}
-            >
-              <Text style={[styles.secondaryButtonText, { color: colors.buttonSecondaryText }]}>Cancel</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -403,17 +358,38 @@ const styles = StyleSheet.create({
   },
   scoreRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
+    gap: 10,
   },
   scoreLabel: {
     flex: 1,
   },
   scoreValue: {
-    width: 64,
+    width: 72,
     textAlign: 'right',
     fontWeight: '700',
+  },
+  useButton: {
+    width: 78,
+    height: 34,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  useButtonText: {
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  useButtonPlaceholder: {
+    width: 78,
+    height: 34,
+  },
+  scoringHint: {
+    fontSize: 14,
+    lineHeight: 20,
   },
   resetButton: {
     borderRadius: 14,
@@ -423,45 +399,5 @@ const styles = StyleSheet.create({
   resetButtonText: {
     fontWeight: '700',
     fontSize: 16,
-  },
-  modalBackdrop: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  modalCard: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 20,
-    gap: 16,
-    maxHeight: '72%',
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  modalHint: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  modalList: {
-    maxHeight: 320,
-  },
-  modalOption: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    gap: 12,
-  },
-  modalOptionLabel: {
-    fontWeight: '700',
-  },
-  modalOptionHint: {
-    marginTop: 2,
-  },
-  modalOptionScore: {
-    fontSize: 18,
-    fontWeight: '700',
   },
 });

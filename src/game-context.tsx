@@ -67,7 +67,7 @@ type GameContextValue = {
 };
 
 const DEFAULT_SETTINGS: GameSettings = {
-  playerNames: ['Player 1', 'Player 2'],
+  playerNames: ['Player 1'],
   allowedRolls: 3,
 };
 
