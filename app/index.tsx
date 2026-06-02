@@ -34,7 +34,6 @@ export default function GameScreen() {
   const isDarkTheme = colorScheme === 'dark';
   const colors = useThemeColors();
 
-  const currentTotal = useMemo(() => (currentPlayer ? getPlayerTotal(currentPlayer) : 0), [currentPlayer]);
   const upperBonus = useMemo(() => (currentPlayer ? getUpperBonus(currentPlayer) : 0), [currentPlayer]);
   const bockzeeBonus = useMemo(() => currentPlayer?.bockzeeBonus ?? 0, [currentPlayer]);
   const availableCategoryMap = useMemo(
