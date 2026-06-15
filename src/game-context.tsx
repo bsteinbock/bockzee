@@ -1,4 +1,5 @@
-import { createContext, useContext, useMemo, useState, type PropsWithChildren } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createContext, useContext, useEffect, useMemo, useState, type PropsWithChildren } from 'react';
 
 import {
   BOCKZEE_BONUS_POINTS,
@@ -70,6 +71,8 @@ const DEFAULT_SETTINGS: GameSettings = {
   playerNames: ['Player 1'],
   allowedRolls: 3,
 };
+
+const GAME_SETTINGS_STORAGE_KEY = 'bockzee.game-settings';
 
 const GameContext = createContext<GameContextValue | null>(null);
 
@@ -145,6 +148,50 @@ export function GameProvider({ children }: PropsWithChildren) {
   const [rollCount, setRollCount] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [lastAction, setLastAction] = useState('');
+  const [hasLoadedSettings, setHasLoadedSettings] = useState(false);
+
+  useEffect(() => {
+    const loadStoredSettings = async () => {
+      try {
+        const rawSettings = await AsyncStorage.getItem(GAME_SETTINGS_STORAGE_KEY);
+        if (!rawSettings) {
+          setHasLoadedSettings(true);
+          return;
+        }
+
+        const parsedSettings = JSON.parse(rawSettings) as Partial<GameSettings>;
+        const storedSettings = sanitizeSettings({
+          playerNames: parsedSettings.playerNames ?? DEFAULT_SETTINGS.playerNames,
+          allowedRolls: parsedSettings.allowedRolls,
+        });
+
+        setSettings(storedSettings);
+        setPlayers(createPlayers(storedSettings.playerNames));
+      } catch (error) {
+        console.warn('Failed to load saved game settings:', error);
+      } finally {
+        setHasLoadedSettings(true);
+      }
+    };
+
+    void loadStoredSettings();
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedSettings) {
+      return;
+    }
+
+    const persistSettings = async () => {
+      try {
+        await AsyncStorage.setItem(GAME_SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+      } catch (error) {
+        console.warn('Failed to save game settings:', error);
+      }
+    };
+
+    void persistSettings();
+  }, [hasLoadedSettings, settings]);
 
   const resetForSettings = (nextSettings: GameSettingsInput) => {
     const sanitizedSettings = sanitizeSettings(nextSettings);
