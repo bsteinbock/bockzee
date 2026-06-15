@@ -1,4 +1,6 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import * as Application from 'expo-application';
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ReactNativeLegal } from 'react-native-legal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { SCORE_CATEGORIES } from '../src/game-logic';
@@ -18,11 +20,24 @@ const RULES = [
 
 export default function DocScreen() {
   const colors = useThemeColors();
+  const version = Application.nativeApplicationVersion || 'Unknown';
+  const buildNumber = Application.nativeBuildVersion
+    ? `(${Application.nativeBuildVersion} ${Platform.OS})`
+    : `(${Platform.OS})`;
+  const versionText = `Version: ${version}${buildNumber}`;
+  const showLicenses = () => {
+    try {
+      void ReactNativeLegal.launchLicenseListScreen('Open Source Software Licenses');
+    } catch (error) {
+      console.error('Unable to open OSS licenses:', error);
+    }
+  };
 
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={[styles.title, { color: colors.text }]}>How to Play</Text>
+        <Text style={[styles.versionText, { color: colors.textMuted }]}>{versionText}</Text>
 
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Rules</Text>
@@ -49,6 +64,19 @@ export default function DocScreen() {
             </View>
           ))}
         </View>
+
+        <Pressable
+          onPress={showLicenses}
+          style={({ pressed }) => [
+            styles.licenseButton,
+            {
+              borderColor: colors.border,
+              backgroundColor: pressed ? colors.background : colors.card,
+            },
+          ]}
+        >
+          <Text style={[styles.licenseButtonText, { color: colors.text }]}>Show OSS Licenses</Text>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
@@ -68,6 +96,11 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '700',
     textAlign: 'center',
+  },
+  versionText: {
+    textAlign: 'center',
+    fontSize: 12,
+    marginTop: -6,
   },
   card: {
     borderRadius: 16,
@@ -101,5 +134,16 @@ const styles = StyleSheet.create({
   },
   scoreDescription: {
     lineHeight: 20,
+  },
+  licenseButton: {
+    alignSelf: 'center',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  licenseButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
   },
 });
