@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { MAX_ALLOWED_ROLLS, MAX_PLAYERS, MIN_ALLOWED_ROLLS, MIN_PLAYERS } from '../src/game-logic';
 import { useGame } from '../src/game-context';
-import { useThemeColors } from '../src/theme';
+import { SCREEN_SCROLL_BOTTOM_GAP, SCREEN_SCROLL_TOP_GAP, useThemeColors } from '../src/theme';
 
 export default function SettingsScreen() {
   const { addPlayerSlot, applySettings, removePlayerSlot, savePlayerNames, settings } = useGame();
@@ -25,7 +25,7 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
         <Text style={[styles.title, { color: colors.text }]}>Settings</Text>
 
         <View style={[styles.card, { backgroundColor: colors.card }]}>
@@ -129,9 +129,12 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 16,
-    paddingTop: 20,
+    paddingTop: SCREEN_SCROLL_TOP_GAP,
     paddingBottom: 28,
     gap: 14,
+  },
+  scrollView: {
+    marginBottom: SCREEN_SCROLL_BOTTOM_GAP,
   },
   title: {
     fontSize: 32,

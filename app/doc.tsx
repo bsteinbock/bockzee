@@ -4,7 +4,7 @@ import { ReactNativeLegal } from 'react-native-legal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { SCORE_CATEGORIES } from '../src/game-logic';
-import { useThemeColors } from '../src/theme';
+import { SCREEN_SCROLL_BOTTOM_GAP, SCREEN_SCROLL_TOP_GAP, useThemeColors } from '../src/theme';
 
 const RULES = [
   'Each turn starts with up to five dice in play.',
@@ -35,7 +35,7 @@ export default function DocScreen() {
 
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
         <Text style={[styles.title, { color: colors.text }]}>How to Play</Text>
         <Text style={[styles.versionText, { color: colors.textMuted }]}>{versionText}</Text>
 
@@ -88,9 +88,12 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 16,
-    paddingTop: 20,
+    paddingTop: SCREEN_SCROLL_TOP_GAP,
     paddingBottom: 28,
     gap: 14,
+  },
+  scrollView: {
+    marginBottom: SCREEN_SCROLL_BOTTOM_GAP,
   },
   title: {
     fontSize: 32,

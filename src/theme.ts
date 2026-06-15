@@ -29,6 +29,9 @@ export type ThemeColors = {
   modalBackdrop: string;
 };
 
+export const SCREEN_SCROLL_TOP_GAP = 28;
+export const SCREEN_SCROLL_BOTTOM_GAP = 16;
+
 const lightColors: ThemeColors = {
   background: '#f3f4f6',
   card: '#ffffff',

@@ -10,7 +10,7 @@ import {
   getUpperBonus,
 } from '../src/game-logic';
 import { useGame } from '../src/game-context';
-import { useThemeColors } from '../src/theme';
+import { SCREEN_SCROLL_BOTTOM_GAP, SCREEN_SCROLL_TOP_GAP, useThemeColors } from '../src/theme';
 
 export default function GameScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
@@ -84,7 +84,7 @@ export default function GameScreen() {
 
   return (
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
-      <ScrollView ref={scrollViewRef} contentContainerStyle={styles.content}>
+      <ScrollView ref={scrollViewRef} style={styles.scrollView} contentContainerStyle={styles.content}>
         <View style={styles.titleRow}>
           <Text style={[styles.title, { color: colors.text }]}>BockZee</Text>
           <Image
@@ -251,9 +251,12 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 28,
+    paddingTop: SCREEN_SCROLL_TOP_GAP,
+    paddingBottom: 18,
     gap: 14,
+  },
+  scrollView: {
+    marginBottom: SCREEN_SCROLL_BOTTOM_GAP,
   },
   title: {
     fontSize: 32,
