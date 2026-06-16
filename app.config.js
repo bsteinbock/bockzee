@@ -56,7 +56,7 @@ module.exports = () => {
       web: {
         favicon: './assets/favicon.png',
       },
-      plugins: ['expo-router'],
+      plugins: ['expo-router', 'react-native-legal'],
       experiments: {
         typedRoutes: true,
         reactCompiler: true,
